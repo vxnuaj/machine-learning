@@ -22,7 +22,7 @@ Then for each alg or topic (when applicable):
 - [ ] **Classification**
     - [X] Logistic regression
     - [ ] Decision trees
-    - [ ] K-nearest neighbors
+    - [X] K-nearest neighbors
     - [ ] **Class Imbalance**: Understanding and addressing class imbalance issues in classification problems
 - [ ] **Support Vector Machines (SVMs)**
     - [ ] Linear
