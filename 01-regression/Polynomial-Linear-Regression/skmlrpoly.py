@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 if __name__ == "__main__":
-    data = pd.read_csv('quad.csv')
+    data = pd.read_csv('../data/quad.csv')
     data = np.array(data)
 
     X_train = data[:, :2]

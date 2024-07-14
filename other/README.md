@@ -20,3 +20,22 @@ TLDR
 - Test data is used to measure performance, by predicting the label with a model, comparing the label with the real value, and then measuring the error (MSE, MAE, etc)
 
 You can use `sklearn.model_selection.train_test_split` or `sklearn.model_selection.ShuffleSplit` to split a dataset or `sklearn.model_selection.StratifiedShuffleSplit`
+
+### Cross Validation
+
+
+#### K-Fold Cross Val
+
+In K-fold cross validation, the dataset is split into different folds of training and testing sets, where each fold has a unique set of training and testing data, of same size across folds.
+
+A unique model is trained across different folds and the loss and accuracy metrics are averaged to get a true error metric.
+
+This can eliminate the risk of overfitting and gives a more broader view of what true model error is on a generalized dataset.
+
+#### LOOCV
+
+An extreme end to K-fold Cross Validation, where one model is created for the number of samples in a dataset.
+
+Here, a model is trained on all samples with one sample left out to be used for testing.
+
+This is done over all samples, with a then averaged loss to get a more representative error.

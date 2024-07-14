@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error
 
-data = pd.read_csv('data/quad.csv')
+data = pd.read_csv('../data/quad.csv')
 data = np.array(data)
 
 train, test = train_test_split(data, test_size = .3)

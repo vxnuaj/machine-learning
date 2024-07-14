@@ -1,4 +1,4 @@
-**Current Resources**: Introduction to Statistical Learning, IBM ML, Sebastian Raschka ML.
+**Current Resources**: Introduction to Statistical Learning, IBM ML / Deep Learning AI, Sebastian Raschka ML.
 
 **Process**
 
@@ -6,16 +6,21 @@
 - Using An Introduction to Statistical Learning as Book Content
 - Selectively learn what you need based on this README.md
 
+Then for each alg or topic (when applicable):
+
+1. Learn the Theory via resources
+2. Compute Practical Implementations in NumPy from Scratch
+
 **Supervised Learning**
-- [ ] **Train-Test Split**
-  - [ ] Regular Splitting
-  - [ ] Shuffle Splitting
-  - [ ] Stratified Splitting 
-- [ ] **Regression**
-    - [ ] Linear regression
-    - [ ] Polynomial regression
+- [X] **Train-Test Split**
+  - [X] Regular Splitting
+  - [X] Shuffle Splitting
+  - [X] Stratified Splitting 
+- [X] **Regression**
+    - [X] Linear regression
+    - [X] Polynomial regression
 - [ ] **Classification**
-    - [ ] Logistic regression
+    - [X] Logistic regression
     - [ ] Decision trees
     - [ ] K-nearest neighbors
     - [ ] **Class Imbalance**: Understanding and addressing class imbalance issues in classification problems
@@ -34,25 +39,25 @@
 
 **Model Evaluation**
 - [ ] **Evaluation Metrics**
-    - [ ] Accuracy
-    - [ ] Precision
-    - [ ] Recall
-    - [ ] F1-score
+    - [X] Accuracy
+    - [X] Precision
+    - [x] Recall
+    - [X] F1-score
     - [ ] ROC-AUC
-- [ ] **K-fold Cross-Validation**
-- [ ] **Log Likelihood**: Understanding log likelihood and its role in model evaluation
+- [X] **K-fold Cross-Validation**
+- [X] **Log Likelihood**: Understanding log likelihood and its role in model evaluation
 - [ ] Understanding how to choose the appropriate evaluation methodologies
-- [ ] **Model Selection Techniques**: Cross-validation
+- [X] **Model Selection Techniques**: Cross-validation
 
 **Hyperparameter Tuning / Model Selection**
 - [ ] **Hyperparameter Tuning**:
-  - [ ] Grid search
-  - [ ] Random search
+  - [X] Grid search
+  - [X] Random search
   - [ ] Bayesian optimization, etc.
 
 **Bias-Variance Tradeoff**
-- [ ] Understanding bias and variance in models
-- [ ] Techniques to manage bias and variance
+- [X] Understanding bias and variance in models
+- [X] Techniques to manage bias and variance
 
 **Ensemble Methods**
 - [ ] **Bagging**: Random forests
@@ -69,8 +74,8 @@
 
 - [ ]  **Advanced Supervised Learning**
     - [ ]  Ensemble Methods: Stacking, blending, and other ensemble techniques.
-    - [ ]  Advanced Decision Trees: Random forests, XGBoost, LightGBM, and CatBoost.
-    - [ ]  Advanced Classification Techniques: Naive Bayes, Quadratic Discriminant Analysis (QDA), and Support Vector Classification (SVC).
+    - [ ]  Advanced Decision Trees: XGBoost, LightGBM, and CatBoost.
+    - [ ]  Advanced Classification Techniques: Naive Bayes, Quadratic Discriminant Analysis (QDA), and Support Vector Classification (SVC), Naive Bayes, QDA.
 - [ ]  **Advanced Unsupervised Learning**
     - [ ]  Advanced Clustering: DBSCAN, OPTICS, Mean-shift, and Spectral clustering.
     - [ ]  Advanced Dimensionality Reduction: Non-negative Matrix Factorization (NMF), Independent Component Analysis (ICA), and Autoencoders (without deep learning).
