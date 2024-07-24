@@ -24,10 +24,10 @@ Then for each alg or topic (when applicable):
     - [ ] Decision trees
     - [X] K-nearest neighbors
     - [ ] **Class Imbalance**: Understanding and addressing class imbalance issues in classification problems
-- [ ] **Support Vector Machines (SVMs)**
-    - [ ] Linear
-    - [ ] Non-linear SVMs
-    - [ ] Kernel methods
+- [X] **Support Vector Machines (SVMs)**
+    - [X] Linear
+    - [X] Non-linear SVMs
+    - [X] Kernel methods
 
 **Unsupervised Learning**
 - [ ] **Clustering**
@@ -67,6 +67,12 @@ Then for each alg or topic (when applicable):
 
 **Introduction to Reinforcement Learning**
 - [ ] **Basics**: Agents, environments, rewards, policies
+- [ ] **Deep-Q-Lander**
+
+**Content:**
+- [ ] Video on SVMs, Theory + Implementation
+- [ ] 2nd Video
+
 
 ---
 
