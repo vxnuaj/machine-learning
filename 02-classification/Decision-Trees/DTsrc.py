@@ -24,5 +24,5 @@ model = DecisionTree(max_depth = max_depth, min_sample_split = min_sample_split,
 
 ''' Training and testing the Decision Tree'''
 
-model.fit(X_train, Y_train, verbose = True)
+model.fit(X_train, Y_train, alpha = 1, verbose = True)
 model.predict(X_test, Y_test, verbose = True)

@@ -105,9 +105,10 @@ class DecisionTree():
         self.min_sample_split = min_sample_split 
         self.modality = modality
 
+        self.n_leaf = 0
         self.root = None 
 
-    def fit(self, X_train, Y_train, verbose = False):
+    def fit(self, X_train, Y_train, alpha = None, verbose = False):
        
         '''
         Fit the Decision Tree.
@@ -117,13 +118,17 @@ class DecisionTree():
         :param Y_train: The labels for the corresponding X_train, of shape (samples, ) or (samples, 1)
         :type X_train: numpy.ndarray
         :param verbose: The verbosity for fitting the Decision Tree. If True, during training, expect a shit load of output.
+        :type verbose: bool
+        :param alpha: The cost complexity parameter, similar to regularization for lin, log, or nn
         '''
         
         self.X_train = X_train
         self.Y_train = Y_train
+        self.alpha = alpha
         self.verbose_fit = verbose
         
         self.root = self._grow_tree(self.X_train, self.Y_train)
+      
         
     def _grow_tree(self, X, Y, depth = 0):
       
@@ -140,15 +145,29 @@ class DecisionTree():
         :return: The root node, holding the left_node(s) and right_node(s) splits as Node.left_node and Node.right_node
         :return type: Node instance
         '''
-      
+ 
         n_samples, n_feature = X.shape
         n_labels = len(np.unique(Y))
-        
+       
+        # Stopping Criteria 
         if (depth > self.max_depth or n_labels == 1 or n_samples < self.min_sample_split):
+            self.n_leaf += 1
             leaf_value = self._most_common_label(Y)
             return Node(value = leaf_value) 
          
         best_feat, best_thresh = self._best_split(X, Y)
+       
+        # If there is no best feature or best threshold index, return the Node. Occurs if the information_gain doesn't exceed -1 for the current node.
+        # This then only occurs when we introduce the alpha parameter (aka complexity parameter), as a means of regularization
+        # See here - https://www.youtube.com/watch?v=Tg2OGohaUTc
+        # The alpha parameter adds a penalty to the weighted entropy, thereby when we compute the information entropy as parent_entropy - weighted_entropy, 
+        # some of the values for information entropy are negative. The amount of negative values are determiend by the magnitude of alpha.
+        # Then, given that, more weights are pruned with no optimal solution the bigger alpha (complexity parameter), reducing overfitting.
+        
+        if best_feat is None or best_thresh is None:
+            leaf_value = self._most_common_label(Y)
+            return Node(value = leaf_value) 
+        
         left_idxs, right_idxs = self._split(X[:, best_feat], best_thresh) 
      
         depth += 1
@@ -179,19 +198,21 @@ class DecisionTree():
         
         n_samples, n_features = X.shape 
         best_gain = -1 
+        best_feat = None
+        best_thresh = None
          
         for feat in range(n_features):
             X_col = X[:, feat]
             thresholds = np.unique(X[:, feat])
 
             for thresh in thresholds:
-                information_gain = self._information_gain(X_col, Y, thresh)
+                self.information_gain = self._information_gain(X_col, Y, thresh)
 
-                if information_gain > best_gain:
-                    best_gain = information_gain
+                if self.information_gain > best_gain:
+                    best_gain = self.information_gain
                     best_feat = feat
                     best_thresh = thresh
-                    
+       
         return best_feat, best_thresh
 
     def _split(self, X_col, thresh):
@@ -239,9 +260,14 @@ class DecisionTree():
            
             parent_entropy = entropy(Y) 
             left_entropy, right_entropy = entropy(Y[left_idxs]), entropy(Y[right_idxs]) 
-            weighted_entropy = (n_l / n) * left_entropy + (n_r / n) * right_entropy
+            
+            if self.alpha: 
+                weighted_entropy = ((n_l / n) * left_entropy + (n_r / n) * right_entropy) + self.alpha * np.abs(self.n_leaf)
+            else:
+                weighted_entropy = (n_l / n) * left_entropy + (n_r / n) * right_entropy
+ 
             information_gain = parent_entropy - weighted_entropy 
-        
+         
         elif self.modality == 'gini':
             parent_gini = gini(Y)
             left_gini, right_gini = gini(Y[left_idxs]), gini(Y[right_idxs]) 
@@ -287,8 +313,10 @@ class DecisionTree():
 
         pred = np.array([self._traverse(x) for x in X_test])
 
+        self.test_acc = dt_accuracy(Y_test.flatten(), pred) 
+       
         if self.verbose_predict:
-            print(f"Accuracy: {dt_accuracy(Y_test.flatten(), pred)}")
+            self.metrics()
             
         return pred
 
@@ -314,7 +342,11 @@ class DecisionTree():
                 node = node.right_node
         
         return node.value
-        
+       
+    def metrics(self):
+        print(f"\nTotal Leaf Nodes: {self.n_leaf}") 
+        print(f"Accuracy: {self.test_acc}%")
+       
     @property
     def X_train(self):
         return self._X_train
@@ -334,6 +366,16 @@ class DecisionTree():
         if not isinstance(Y_train, (np.ndarray)):
             raise ValueError('Y_train must be type numpy.ndarray.')   
         self._Y_train = Y_train 
+      
+    @property
+    def alpha(self):
+        return self._alpha
+    
+    @alpha.setter
+    def alpha(self, alpha):
+        if not isinstance(alpha, (int, float, type(None))):
+            raise ValueError('alpha must be type float.')
+        self._alpha = alpha 
        
     @property
     def verbose_fit(self):

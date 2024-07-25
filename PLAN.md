@@ -36,6 +36,7 @@ Then for each alg or topic (when applicable):
 - [ ] **Dimensionality Reduction**:
     - [ ] PCA
     - [ ] t-SNE
+    - [ ] SVD & TruncatedSVD
 
 **Model Evaluation**
 - [ ] **Evaluation Metrics**

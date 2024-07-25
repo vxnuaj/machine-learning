@@ -1,28 +1,44 @@
 import numpy as np
+from sklearn.datasets import fetch_openml
+from sklearn.decomposition import TruncatedSVD
+from sklearn.manifold import TSNE
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
-def some_fun(x):
-    if x == []: 
-        return 0
-    else:
-        return 1 + some_fun(x[1:] )
+# Load MNIST data
 
-def quick_sort(array):
-    if len(array) < 2:
-        return array
-    else:
-        pivot = array[0]
-        smaller, bigger = [ ] , [ ]
-        for element in array[1:]:
-            
-            if element <= pivot:
-                smaller.append(element) 
-            else: 
-                bigger.append(element)
-        
-        return quick_sort(smaller) + [pivot] + quick_sort(bigger)
-        
-if __name__ == "__main__":
-    
-    x = list([12, 1, 2, 3, 40, 1, 22, 40])
-    
-    print(quick_sort(x)) 
+print('loading data')
+
+mnist = fetch_openml('mnist_784')
+X, y = mnist.data, mnist.target
+
+print('reducing dimensionality with TSVD')
+
+# Reduce dimensionality with TSVD
+tsvd = TruncatedSVD(n_components=50)
+X_reduced = tsvd.fit_transform(X)
+
+#print('reducing dimensionality again with t_SNE')
+
+# Further reduce with t-SNE
+#tsne = TSNE(n_components=2, random_state=42)
+#X_tsne = tsne.fit_transform(X_reduced)
+
+print('splitting data')
+
+# Split data into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X_reduced, y, test_size=0.2, random_state=42)
+
+print('training the tree')
+
+# Train a decision tree
+clf = DecisionTreeClassifier()
+clf.fit(X_train, y_train)
+
+print(f'evaluating tree')
+
+# Predict and evaluate
+y_pred = clf.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f'Accuracy: {accuracy * 100:.2f}%')
