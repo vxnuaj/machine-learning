@@ -1,6 +1,6 @@
 ## Classification
 
-## Logistic Regression
+### Logistic Regression
 
 Performs binary classification, defined as:
 
@@ -333,3 +333,92 @@ You can also regularize a decision tree, by adding an additional hyperparameter 
 This is a form of pruning.
 
 > *Check out the comments under the [implementation](Decision-Trees/dtree.py)*
+
+### Ensemble Methods
+
+Ensemble learning is a form of learning where we combing multiple models, more commonly Decision Trees to make more generalizable predictions through Majority Voting Classifiers or Soft Voting Classifiers.
+
+**Majority Voting Classifiers** are Classifiers that leverage majority voting to make a final prediction are a form of Ensemble Learning. 
+
+Majority voting classifiers are made up of multiple distinct classifiers, say $f_i$ where $i$ is the $ith$ classifier.
+
+All $i$ classifiers are trained on the same data, to then make a final prediction of $\hat{y}_i$.
+
+For every $\hat{y}_i$ that is made, the majority or the $mode()$ of all predictions is taken to find the majority vote, which is then set as the final prediction, $\hat{Y}$.
+
+We use majority voting to mitigate the impact of that Irreducible Error has per each individual classifier $f_i$. If the Irreducible Error is uncorrelated amongst all $i$ models, taking the $mode()$ of all $\hat{y}_i$ can potentially yield a more accurate $\hat{Y}$.
+
+The error for an ensemble model can then be computed using the Binomial Theorem, as:
+
+$\epsilon_{ens}= \sum_{k = 0}^n \begin{pmatrix}n \\ k \end{pmatrix} (1 - \epsilon)^{n - k} \epsilon^k$
+
+where $\epsilon_{ens}$ is the irreducible error a sum of the binomial probability over all $n$ models and $k$ are the amount of models that predict the sample label.
+
+**Soft Voting Classifiers** are n extension of Majority Voting Classifiers, but where instead of computing the hard majority, we compute the soft majority, based on the output probabilities of a decision tree to a given class.
+
+For each model $f_i$, rather than outputting the raw label as a prediction, it would output the probability of a label $Y$ belonging to a sample $X$.
+
+This probability would then be used to compute an average probability of a given $X$ belong to $Y$, for all classes in $Y$ using a weight $w_i$ which is typically the same across all predictions as $\frac{1}{n}$ where $n$ is the total number of models.
+
+The final probability is then computed as:
+
+$\hat{Y} = argmax(\sum_{i = 0}^n w_i \cdot p_{ij})$
+
+> *Here, if we have a given classifier with a higher reliability, we can increase the prominence of it's classification by increasing the magnitude of it's corresponding weight.*
+> 
+> *Then, the classifier has more of a say into which is the right prediction within the overarching ensemble*
+> 
+> *Finding these weights might prove to be tedious, it's a form of hyperparameter tuning. You might be able to do a grid / random search.*
+
+Then, the class belonging to the highest probability is chosen as the class prediction.
+
+**Bagging**, also known as bootstrap aggregating, is an Ensemble Learning method, that uses the same learning algorithm for all $n$ models within the Ensemble.
+
+It uses $n$ Bootstrap Samples to train $n$ total models.
+
+Then, from each prediction from a given model, $f_i$, you can use the hard majority vote or the soft majority vote from Majority Voting Classifiers and Soft Voting Classifiers respectively, to compute the final prediction for the ensemble.
+
+Given this, in Bagging, it is practical to overfit numerous models on different sets of Bootstrap Samples, and then take the $argmax()$ of a set of averaged probabilities for a set of classes to get a more precise prediction.
+
+> *Bagging is more geared for decision trees, so if you train multiple decision trees without pruning on different Bootstrap Samples, to overfit, and then take the hard or soft majority you'd hypothetically get a higher accuracy.*
+
+If the error of a model is computed as:
+
+$Error = Var + Bias + \epsilon$, where $\epsilon$ is the irreducible error, the goal of bagging is to reduce $Var$.
+
+If $Var = (h_D(x) - \bar{h(x)})^2$, meaning $\sigma^2$, our goal would be to reduce $h_D(x) - \bar{h(x)})^2$. Reducing it would mean that we're introducing a more generalizable model to solve different problems.
+
+>*Simple bias / variance problem, where we want to reduce variability but also mitigate the bias as much as possible, for both accuracy and generalizability.*
+
+**Weak Law of Large Numbers (WLLN)** states that for a sequence of i.i.d (independent and identically distributed) random variables, say $x_i$, with a common mean, $\bar{x}$, we have $\frac{1}{m}\sum_{i=1}^m x_i \rightarrow \bar{x} as m \rightarrow \infty$
+
+So for a hypothetically infinite set of i.i.d datapoints, $x_i$'s, the average of it will return to the same $\bar{x}$
+
+If the **WLLN** is applied to classifiers, a set of bagged classifiers, where the output of an individual classifier $f_i$ is $\hat{y}_i$, then the more classifiers we have, the more representative the averaged output, as $\bar{\hat{y}}$, will be to the true label $y$.
+
+This average of multiple classifiers is an **ensemble** of classifiers, which reduces the $h_D(x) - \bar{h(x)}^2$ or the $Var$ of the model output. This can be drawn from drawing multiple bootstrapped datsets, $d_i$ from the overarching dataset $D$.
+
+So say we have the datsaet $D$ and we want to draw subsets of the data, $d_i$, from $D$, uniformly. The probability distribution that a given $(x_i, y_i)$ be chosen from $D$ can then be denoted as $Q(X, Y) | D)$, where the probability of choosing a given $(x_i, y_i)$ pair is $Q((x_i, y_i) | D) = \frac{1}{n}$ for all $(x_i, y_i) \in D$, where $n$ is equal to the size of $D$.
+
+> *Each sample has an equivalent probability of being chosen for the given subset of $D$, $d_i$*
+> *Note that each sample can be chosen more than once, as for each draw, we're drawing from the entire dataset $D$. This is called drawing with replacement.*
+
+Then, the bagged classifier can be denoted as $\hat{h}_D = \frac{1}{m} \sum_{i = 1}^{m} h_{d_i}$, where $\hat{h}_D$ is the output of the bagged ensemble, $d_i$ si the subset of samples, $m$ is the total amount of  classifiers, in the bagged ensemble.
+
+**Random forests** are a set of bagged decision trees, with the addition of some extra randomness to each tree.
+
+Rather than only using Bootstrap Samples, a random forest has it's individual bagged decision trees trained on a random subset of features.
+
+If we have $n$ total features, we choose $k$ features randomly at each node, where $k < n$, limiting a decision tree to choose the optimal feature split index from only the subset $k$.
+
+Then per usual, you'd choose the split with the highest Information Gain through the Gini Index or Entropy, to make the next split.
+
+A typical choice of $k$ is $k = \sqrt{n}$
+
+This is done to decorrelate each tree within the ensemble, to further reduce the variance and mitigate overfitting. 
+
+> *Otherwise, an individual tree in the ensemble might still come up with similar splits to others.*
+
+If each tree was overfit, given that Bootstrap Samples still contain some similar data, the overall result may still yield an overfit prediction with high variance. 
+
+Random Forests, decorrelating each tree through Bootstrap Samples and a random selection of features, are able to produce results that are more generalizable.
