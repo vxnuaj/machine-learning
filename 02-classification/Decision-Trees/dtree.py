@@ -1,5 +1,6 @@
 import numpy as np
 from nue.metrics import dt_accuracy, entropy, gini
+from nue.preprocessing import x_y_split, train_test_split, csv_to_numpy
 
 class Node():
     
@@ -27,7 +28,7 @@ class Node():
         self.threshold = threshold
 
     def _is_leaf(self):
-        
+
         '''
         Assess if the current Node is a leaf node or not. 
         
@@ -37,56 +38,6 @@ class Node():
         
         return self.value is not None # Returns True if self.value isn't None. Otherwise, if it is None, returns False.
 
-    @property
-    def value(self):
-        return self._value
-    
-    @value.setter
-    def value(self, value):
-        if not isinstance(value, (float, np.floating, int, np.integer, type(None))):
-            raise ValueError('value must be type int or float.')
-        self._value = value
-   
-    @property
-    def left_node(self):
-        return self._left_node
-    
-    @left_node.setter
-    def left_node(self, left_node):
-        if not isinstance(left_node, (Node, type(None))):
-            raise ValueError('left_node must be an instance of Node.')
-        self._left_node = left_node        
-    
-    @property
-    def right_node(self):
-        return self._right_node
-    
-    @right_node.setter
-    def right_node(self, right_node):
-        if not isinstance(right_node, (Node, type(None))):
-            raise ValueError('right_node must be an instance of Node')
-        self._right_node = right_node
-        
-    @property
-    def feature(self):
-        return self._feature
-    
-    @feature.setter 
-    def feature(self, feature):
-        if not isinstance(feature, (int, type(None))):
-            raise ValueError('feature must be type int')
-        self._feature = feature 
-        
-    @property
-    def threshold(self):
-        return self._threshold
-    
-    @threshold.setter
-    def threshold(self, threshold):
-        if not isinstance(threshold, (float, np.floating, int, np.integer, type(None))):
-            raise ValueError('threshold must be type float or int or None.')
-        self._threshold = threshold
-         
 class DecisionTree():
     
     '''
@@ -165,6 +116,7 @@ class DecisionTree():
         # Then, given that, more weights are pruned with no optimal solution the bigger alpha (complexity parameter), reducing overfitting.
         
         if best_feat is None or best_thresh is None:
+            self.n_leaf += 1 
             leaf_value = self._most_common_label(Y)
             return Node(value = leaf_value) 
         
@@ -346,83 +298,20 @@ class DecisionTree():
     def metrics(self):
         print(f"\nTotal Leaf Nodes: {self.n_leaf}") 
         print(f"Accuracy: {self.test_acc}%")
-       
-    @property
-    def X_train(self):
-        return self._X_train
-    
-    @X_train.setter
-    def X_train(self, X_train):
-        if not isinstance(X_train, (np.ndarray)):
-            raise ValueError('X_train must be type numpy.ndarray.')
-        self._X_train = X_train
-   
-    @property
-    def Y_train(self):
-        return self._Y_train
-    
-    @Y_train.setter
-    def Y_train(self, Y_train):
-        if not isinstance(Y_train, (np.ndarray)):
-            raise ValueError('Y_train must be type numpy.ndarray.')   
-        self._Y_train = Y_train 
-      
-    @property
-    def alpha(self):
-        return self._alpha
-    
-    @alpha.setter
-    def alpha(self, alpha):
-        if not isinstance(alpha, (int, float, type(None))):
-            raise ValueError('alpha must be type float.')
-        self._alpha = alpha 
-       
-    @property
-    def verbose_fit(self):
-        return self._verbose_fit
-    
-    @verbose_fit.setter
-    def verbose_fit(self, verbose_fit):
-        if not isinstance(verbose_fit, bool):
-            raise ValueError('verbose_fit must be type bool.')
-        self._verbose_fit = verbose_fit
-
-    @property
-    def modality(self):
-        return self._modality
-    
-    @modality.setter
-    def modality(self, modality):
-        if modality.lower() not in ['entropy', 'gini']:
-            raise ValueError("modality must be 'entropy or 'gini'.")
-        self._modality = modality
         
-    @property
-    def X_test(self):
-        return self._X_test
-    
-    @X_test.setter
-    def X_test(self, X_test):
-        if not isinstance(X_test, np.ndarray):
-            raise ValueError('X_test must be type numpy.ndarray.')
-        self._X_test = X_test
-        
-    @property
-    def Y_test(self):
-        return self._Y_test
-    
-    @Y_test.setter
-    def Y_test(self, Y_test):
-        if not isinstance(Y_test, np.ndarray):
-            raise ValueError('Y_test must be type numpy.ndarray.')
-        self._Y_test = Y_test 
-       
-    @property
-    def verbose_predict(self):
-        return self._verbose_predict
+if __name__ == "__main__":
+    data = csv_to_numpy('data/DesTreeData.csv') # samples, features
+    train, test = train_test_split(data, train_split = .8)
+    X_train, Y_train = x_y_split(train, y_col = 'last')
+    X_test, Y_test = x_y_split(test, y_col = 'last')
+ 
    
-    @verbose_predict.setter
-    def verbose_predict(self, verbose_predict):
-        if not isinstance(verbose_predict, bool):
-            raise ValueError('verbose must be type bool')
-        self._verbose_predict = verbose_predict 
+    max_depth = 1000
+    min_samples = 2
+    alpha = .00001
+    criterion = 'gini'
+    verbose = True
+   
+    model = DecisionTree(max_depth = max_depth, min_sample_split = min_samples, modality = 'gini')
+    model.fit(X_train, Y_train, alpha = alpha, verbose = verbose)
+    model.predict(X_test, Y_test, verbose = verbose)

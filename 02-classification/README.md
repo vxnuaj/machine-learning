@@ -405,6 +405,18 @@ So say we have the datsaet $D$ and we want to draw subsets of the data, $d_i$, f
 
 Then, the bagged classifier can be denoted as $\hat{h}_D = \frac{1}{m} \sum_{i = 1}^{m} h_{d_i}$, where $\hat{h}_D$ is the output of the bagged ensemble, $d_i$ si the subset of samples, $m$ is the total amount of  classifiers, in the bagged ensemble.
 
+> *Note that the **WLNN** does not apply to a bagged classifiers as the subsets, $d_i$ are drawn from $D$ in a manner that doesn't allow for every $d_i$ to be i.i.d as multiple samples can repeat and be dependent. But this does not disrupt the classifier as it still tends to be more empirically accurate than standalone decision trees.*
+
+An advantage of a bagged classifier is that it can provide us with an out-of-the-box test error. Given that some $d_i$ won't include some $(x_i, y_i)$, there will be a set of classifiers, $h$, within the total set H, that were never trained on $(x_i, y_i)$
+
+Therefore, what one can do is identify the classifiers that weren't trained on $(x_i, y_i)$, and run a prediction using the $(x_i, y_i$ for that given subset of classifiers. This is run for all classifiers within an ensemble that weren't trained on a given $(x_i, y_i)$. The subset of classifiers will differ for each $(x_i, y_i)$. Then the error is averaged amongst all classifiers.
+
+$f = \frac{1}{e} \sum{i=1}^
+
+This can then give us an insight on what the true test error would be if the model was implemented on a real-world dataset, without having access to one.
+
+We can also obtain the $\mu$ and the $Var$ for the entire set of classifiers, the $\mu$ being the prediction of the ensemble baesd on soft or hard majority voting and the $Var$ being the level of uncertainty, of the predictions of the model.
+
 **Random forests** are a set of bagged decision trees, with the addition of some extra randomness to each tree.
 
 Rather than only using Bootstrap Samples, a random forest has it's individual bagged decision trees trained on a random subset of features.
@@ -422,3 +434,33 @@ This is done to decorrelate each tree within the ensemble, to further reduce the
 If each tree was overfit, given that Bootstrap Samples still contain some similar data, the overall result may still yield an overfit prediction with high variance. 
 
 Random Forests, decorrelating each tree through Bootstrap Samples and a random selection of features, are able to produce results that are more generalizable.
+
+
+# Decision Tree Principles
+
+1. **Data Preparation:**
+   - **Collect and Clean Data:** Ensure the data is cleaned and preprocessed, handling missing values and categorical variables appropriately.
+
+2. **Feature Selection:**
+   - **Choose Features:** Identify the features to use for splitting nodes.
+
+3. **Tree Construction:**
+   - **Split Nodes:** For each node, select the feature and threshold that best separates the data. Use metrics like Gini impurity or entropy (for classification) or variance (for regression).
+   - **Recursive Partitioning:** Apply the splitting criteria recursively to create child nodes, continuing until a stopping criterion is met (e.g., maximum depth, minimum samples per leaf, or no further improvement).
+
+4. **Stopping Criteria:**
+   - **Max Depth:** Limit the maximum depth of the tree to prevent overfitting.
+   - **Min Samples Split:** Set a minimum number of samples required to split a node.
+   - **Min Samples Leaf:** Set a minimum number of samples required at a leaf node.
+
+5. **Tree Pruning:**
+   - **Post-Pruning (Optional):** After the tree is fully grown, prune nodes that provide little predictive power to improve generalization.
+
+6. **Prediction:**
+   - **Classification:** For classification, use the majority class of the samples in the leaf node.
+   - **Regression:** For regression, use the mean value of the samples in the leaf node.
+
+7. **Evaluation:**
+   - **Validate Performance:** Evaluate the tree using cross-validation or a separate test set to assess its performance and adjust hyperparameters as necessary.
+
+
