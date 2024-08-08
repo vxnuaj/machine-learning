@@ -436,31 +436,3 @@ If each tree was overfit, given that Bootstrap Samples still contain some simila
 Random Forests, decorrelating each tree through Bootstrap Samples and a random selection of features, are able to produce results that are more generalizable.
 
 
-# Decision Tree Principles
-
-1. **Data Preparation:**
-   - **Collect and Clean Data:** Ensure the data is cleaned and preprocessed, handling missing values and categorical variables appropriately.
-
-2. **Feature Selection:**
-   - **Choose Features:** Identify the features to use for splitting nodes.
-
-3. **Tree Construction:**
-   - **Split Nodes:** For each node, select the feature and threshold that best separates the data. Use metrics like Gini impurity or entropy (for classification) or variance (for regression).
-   - **Recursive Partitioning:** Apply the splitting criteria recursively to create child nodes, continuing until a stopping criterion is met (e.g., maximum depth, minimum samples per leaf, or no further improvement).
-
-4. **Stopping Criteria:**
-   - **Max Depth:** Limit the maximum depth of the tree to prevent overfitting.
-   - **Min Samples Split:** Set a minimum number of samples required to split a node.
-   - **Min Samples Leaf:** Set a minimum number of samples required at a leaf node.
-
-5. **Tree Pruning:**
-   - **Post-Pruning (Optional):** After the tree is fully grown, prune nodes that provide little predictive power to improve generalization.
-
-6. **Prediction:**
-   - **Classification:** For classification, use the majority class of the samples in the leaf node.
-   - **Regression:** For regression, use the mean value of the samples in the leaf node.
-
-7. **Evaluation:**
-   - **Validate Performance:** Evaluate the tree using cross-validation or a separate test set to assess its performance and adjust hyperparameters as necessary.
-
-
