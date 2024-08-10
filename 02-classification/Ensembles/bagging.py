@@ -34,13 +34,13 @@ class DecisionTree:
     def test(self, X_test, Y_test):
         self.X_test = X_test
         self.Y_test = Y_test
-        self.preds = np.array([self._traverse(x) for x in X_test])
+        self.preds = np.array([self._traverse(x) for x in self.X_test])
         self.accuracy = self._accuracy(Y_test, self.preds) 
-       
+   
         if self.verbose_test:
             print(f"Accuracy: {self.accuracy}%")
-    
-        return self.accuracy, self.preds
+   
+        return self.preds
 
     def _grow_tree(self, X, Y, depth = 0):
         n_samples, n_features = X.shape
@@ -76,7 +76,6 @@ class DecisionTree:
         return labels[most_common_label]
     
     def _best_split(self, X, Y):
-        
         n_samples, n_features = X.shape
         best_thresh, best_feat = None, None 
         best_gain = -1 
@@ -134,24 +133,24 @@ class DecisionTree:
         probs = freqs / Y.size
         gini = 1 - np.sum(np.square(probs))
         return gini 
-    
+   
     def _traverse(self, x):
-       
         node = self.root
+   
         while not node._is_leaf(): 
             if x[node.feature] < node.threshold: 
                 node = node.left_node
             elif x[node.feature] >= node.threshold:
                 node = node.right_node
-        return node.value 
+
+        return node.value
     
     def _accuracy(self, Y, preds):
         acc = np.sum(Y.flatten() == preds.flatten()) / Y.size * 100
         return acc
 
 class BaggedTrees:
-    def __init__(self, modality = 'hard', verbose_train = False, verbose_test = False):
-        self.modality = modality
+    def __init__(self, verbose_train = False, verbose_test = False):
         self.verbose_train = verbose_train
         self.verbose_test = verbose_test
         self._preds = []
@@ -184,7 +183,8 @@ class BaggedTrees:
     def test(self, X_test, Y_test):
         self.X_test = X_test
         self.Y_test = Y_test
-        self._preds = self._get_preds()
+      
+        self._preds = self._get_model_pred()
         self.accuracy = self._accuracy(Y_test, self._preds)
 
         if self.verbose_test:
@@ -196,17 +196,18 @@ class BaggedTrees:
         Y_bootstrap = Y[bootstrap_idx]
         return X_bootstrap, Y_bootstrap
            
-    def _get_preds(self):
-        all_preds = []
-        print()
+    def _get_model_pred(self):
+
+        all_preds = [ ]
+
         for model in self.models:
-            acc, preds = model.test(self.X_test, self.Y_test)
+            preds = model.test(self.X_test, self.Y_test)
             all_preds.append(preds)
 
         all_preds = np.array(all_preds)
 
-        most_common_label = np.apply_along_axis(self._most_common, axis = 0, arr = all_preds)
-        self._preds.append(most_common_label)
+        pred = np.apply_along_axis(self._most_common, axis = 0, arr = all_preds)
+        self._preds.append(pred)
         return np.array(self._preds)
 
     def _most_common(self, all_preds):
@@ -226,18 +227,18 @@ if __name__ == "__main__":
     X_test, Y_test = x_y_split(test, y_col = 'last')
   
     verbose_test = True
-    n_bootstrap = 10
-    alpha_range = (0, 10)
+    n_bootstrap = 100
     dtree_dict = {
         'max_depth': 1000,
         'min_node_samples': 2,
+        'alpha': 0,
         'verbose_train': False,
         'verbose_test': True,
         'modality': 'gini'
     }
 
-    model = BaggedTrees(modality = 'hard', verbose_test = verbose_test) 
-    model.train(X_train, Y_train, n_bootstrap = n_bootstrap, dtree_dict = dtree_dict, alpha_range = alpha_range)
+    model = BaggedTrees(verbose_test = verbose_test) 
+    model.train(X_train, Y_train, n_bootstrap = n_bootstrap, dtree_dict = dtree_dict)
     model.test(X_test, Y_test)
 
     '''model = DecisionTree(max_depth = 1000, min_node_samples=2, verbose = True)
