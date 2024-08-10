@@ -24,8 +24,14 @@ X_test = ss_train.fit_transform(X_test)
 Y_test = ss_train.fit_transform(Y_test)
 eps = 1e-8
 
-Y_mean = np.mean(Y_train)
-X_mean = np.mean(X_train)
+print(f'x {X_train.shape}')
+print(f'y {Y_train.shape}')
+
+Y_mean = np.mean(Y_train, axis = 0)
+X_mean = np.mean(X_train, axis = 0)
+
+print(f'xmean: {X_mean}')
+print(f"ymean: {Y_mean}\n")
 
 w= (np.sum((X_train - X_mean) * (Y_train -Y_mean), axis = 0) / np.sum(np.square(X_train - X_mean) + eps, axis = 0)) / 2
 b = np.sum(Y_mean - w * X_mean) / 2

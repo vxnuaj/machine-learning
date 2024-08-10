@@ -407,11 +407,11 @@ Then, the bagged classifier can be denoted as $\hat{h}_D = \frac{1}{m} \sum_{i =
 
 > *Note that the **WLNN** does not apply to a bagged classifiers as the subsets, $d_i$ are drawn from $D$ in a manner that doesn't allow for every $d_i$ to be i.i.d as multiple samples can repeat and be dependent. But this does not disrupt the classifier as it still tends to be more empirically accurate than standalone decision trees.*
 
-An advantage of a bagged classifier is that it can provide us with an out-of-the-box test error. Given that some $d_i$ won't include some $(x_i, y_i)$, there will be a set of classifiers, $h$, within the total set H, that were never trained on $(x_i, y_i)$
+An advantage of a bagged classifier is that it can provide us with an out-of-the-box test error. Given that some $d_i$ won't include some $(x_i, y_i)$, there will be a set of classifiers, $h$, within the total set $H$, that were never trained on $(x_i, y_i)$
 
-Therefore, what one can do is identify the classifiers that weren't trained on $(x_i, y_i)$, and run a prediction using the $(x_i, y_i$ for that given subset of classifiers. This is run for all classifiers within an ensemble that weren't trained on a given $(x_i, y_i)$. The subset of classifiers will differ for each $(x_i, y_i)$. Then the error is averaged amongst all classifiers.
+Therefore, what one can do is identify the classifiers that weren't trained on $(x_i, y_i)$, and run a prediction using the $(x_i, y_i$ for that given subset of classifiers. This is run for all classifiers within an ensemble that weren't trained on a given $(x_i, y_i)$ and then ran for all possible sets of $(x_i, y_i)$. The subset of classifiers will differ for each $(x_i, y_i)$. Then the error is averaged amongst all classifiers.
 
-$f = \frac{1}{e} \sum{i=1}^
+$E = \frac{1}{n} \sum_{(x_i, y_i) \in D} e$
 
 This can then give us an insight on what the true test error would be if the model was implemented on a real-world dataset, without having access to one.
 
@@ -421,18 +421,27 @@ We can also obtain the $\mu$ and the $Var$ for the entire set of classifiers, th
 
 Rather than only using Bootstrap Samples, a random forest has it's individual bagged decision trees trained on a random subset of features.
 
-If we have $n$ total features, we choose $k$ features randomly at each node, where $k < n$, limiting a decision tree to choose the optimal feature split index from only the subset $k$.
+If we have $n$ total features, we choose $k$ features randomly at each node, where $k < n$, limiting a decision tree to choose the optimal feature split index from only the subset of features, $k$.
 
-Then per usual, you'd choose the split with the highest Information Gain through the Gini Index or Entropy, to make the next split.
+Then per usual, you'd choose the split with the highest Information Gain through the Gini Index or Entropy, to make the next split, but only based on $k$.
 
-A typical choice of $k$ is $k = \sqrt{n}$
+A typical choice of the size of $k$ is $k_{size} = \sqrt{n}$
 
 This is done to decorrelate each tree within the ensemble, to further reduce the variance and mitigate overfitting. 
 
 > *Otherwise, an individual tree in the ensemble might still come up with similar splits to others.*
 
-If each tree was overfit, given that Bootstrap Samples still contain some similar data, the overall result may still yield an overfit prediction with high variance. 
+If we had a dataset $D$, containing multiple $D_i$, where $D_1$ was a very strong feature / predictor for a given label, most trees if not all would then use $D_1$ at the first split, the root split. Thereby most of the trees may end up looking very alike given that the strongly correlated feature was used as the root split node for all.
+So each tree is correlated. Random forests overcome this as they're limited to using a subset of the total features / predictors and therefore, most of the trees in the random forest ensemble, won't have a predictor that strongly correlates the trees.
 
-Random Forests, decorrelating each tree through Bootstrap Samples and a random selection of features, are able to produce results that are more generalizable.
+The smaller the size of the subset $D_1$ is, the better the tree will be at generalizing to a dataset to provide an unbiased prediction, as the predictions are based on trees using different sets of predictors.
+
+The process of training a Random Forest is very similar to training a set of bagged trees, the only difference being that we select different $n$ subsets of bootstrapped samples containing different $m$ features $\in D$, $D_i$, to train $n$ different models.
+
+1. Sample $n$ datasets from $D$ with replacement (bootstrapped samples)
+2. For each subset, $D_i$, select a random number of features at each node, $m$, to train a decision tree on and leave out the rest, where $m ≤ len(D_i)$
+3. Train the ensemble on each $D_i$, and then run predictions
+4. Get the final predictions using hard or soft majority voting.
+
 
 

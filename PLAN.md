@@ -21,22 +21,26 @@ Then for each alg or topic (when applicable):
     - [X] Polynomial regression
 - [ ] **Classification**
     - [X] Logistic regression
-    - [ ] Decision trees
+    - [X] Decision trees
     - [X] K-nearest neighbors
     - [ ] **Class Imbalance**: Understanding and addressing class imbalance issues in classification problems
 - [X] **Support Vector Machines (SVMs)**
     - [X] Linear
     - [X] Non-linear SVMs
     - [X] Kernel methods
+    - [ ] Git Repo with Notes and Implementations
 
 **Unsupervised Learning**
 - [ ] **Clustering**
     - [ ] K-means
     - [ ] Hierarchical clustering
+        - [ ] Agglomerative
+        - [ ] Divisive
 - [ ] **Dimensionality Reduction**:
     - [ ] PCA
     - [ ] t-SNE
-    - [ ] SVD & TruncatedSVD
+    - [ ] Truncated SVD
+- [ ] Git Repo with Notes + Implementations
 
 **Model Evaluation**
 - [ ] **Evaluation Metrics**
@@ -47,7 +51,7 @@ Then for each alg or topic (when applicable):
     - [ ] ROC-AUC
 - [X] **K-fold Cross-Validation**
 - [X] **Log Likelihood**: Understanding log likelihood and its role in model evaluation
-- [ ] Understanding how to choose the appropriate evaluation methodologies
+- [ ] Understanding how to choose the appropriate evaluation methodologies, apply it to one of your models.
 - [X] **Model Selection Techniques**: Cross-validation
 
 **Hyperparameter Tuning / Model Selection**
@@ -65,15 +69,18 @@ Then for each alg or topic (when applicable):
 - [ ] **Boosting**: 
   - [ ] AdaBoost
   - [ ] Gradient Boosting
+- [ ] Git Repo
+    - [ ] Notes + Implementation
+ 
 
 **Introduction to Reinforcement Learning**
 - [ ] **Basics**: Agents, environments, rewards, policies
-- [ ] **Deep-Q-Lander**
+- [ ] Deep Q Learning
+  - [ ] **Deep-Q-Lander**
 
 **Content:**
-- [ ] Video on SVMs, Theory + Implementation
-- [ ] 2nd Video
-
+- [ ] Video on SVMs, Theory + Implementation + Article?
+- [ ] 2nd Video on Alg, Theory + Implementation + Article?
 
 ---
 
