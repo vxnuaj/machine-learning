@@ -1,7 +1,6 @@
 import numpy as np
 from nue.metrics import dt_accuracy, entropy, gini
 from nue.preprocessing import x_y_split, train_test_split, csv_to_numpy
-
 class Node():
     
     '''
@@ -300,18 +299,18 @@ class DecisionTree():
         print(f"Accuracy: {self.test_acc}%")
         
 if __name__ == "__main__":
-    data = csv_to_numpy('data/DesTreeData.csv') # samples, features
-    train, test = train_test_split(data, train_split = .8)
-    X_train, Y_train = x_y_split(train, y_col = 'last')
-    X_test, Y_test = x_y_split(test, y_col = 'last')
+    data = csv_to_numpy('data/test.csv') # samples, features, you can try #DecTreeData.csv as well. just uncomment the rest of the preprocessing steps
+    print(data)
+    #train, test = train_test_split(data, train_split = .8)
+    X_train, Y_train = x_y_split(data, y_col = 'last')
+    #X_test, Y_test = x_y_split(test, y_col = 'last')
  
-   
     max_depth = 1000
     min_samples = 2
-    alpha = .00001
+    alpha = None
     criterion = 'gini'
     verbose = True
    
     model = DecisionTree(max_depth = max_depth, min_sample_split = min_samples, modality = 'gini')
     model.fit(X_train, Y_train, alpha = alpha, verbose = verbose)
-    model.predict(X_test, Y_test, verbose = verbose)
+    pred = model.predict(X_train, Y_train, verbose = verbose)

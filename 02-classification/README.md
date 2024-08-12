@@ -443,5 +443,81 @@ The process of training a Random Forest is very similar to training a set of bag
 3. Train the ensemble on each $D_i$, and then run predictions
 4. Get the final predictions using hard or soft majority voting.
 
+## Boosting 
 
+### Adaboost
 
+Boosting adds a set of weights, to a given set of samples, to iteratively train a set of ensembled trees, allowing them to pay more attention to classes that they've incorrectly classify in previous iterations.
+
+Given a set of training examples, you
+
+1. Train a weak learner, meaning a model that is only slightly better than random guessing.
+2. Identify the misclassified and correctly classified classes. 
+3. Increase the weights for the samples in the misclassified class (can be done via increaisng probability of drawing a class in bootstrapping)
+4. Retrain the model on the new set of samples.
+5. For a final prediction, run a pass through all the weak learners and 
+
+Say we have a boosted classifier:
+$H(\vec{x}) = \sum_{i=1}^T \alpha_t h_t(\vec{x})$
+
+$h_t$ is an instance of a **weak learner**, a model / algorithm that is not good at classifying predictions.
+
+This is typically a tree stump, a decision tree that has a depth $< 1$.
+
+The weak learner, $h_t$, is trained on a given dataset, only allowed to reach $depth = 1$. The total error for the stump is the $\sum_{i:h(x_i)≠y_i} w_i$, where $w_i$ is the $ith$ weight associated with the $ith$ classifier that provided an incorrect prediction.
+
+This total error will always be within the range $[0, 1]$, as the weights are always normalized to sum up to $1$.
+
+This total error ($\epsilon$) will determine the amount of say or contribution, $\alpha$, that a model has on the final output of the ensemble.
+
+The $\alpha$ is computed as:
+
+$\alpha = \frac{1}{2} ln(\frac{1 - \epsilon}{\epsilon})$
+
+When the total error is small, the amount of say will be large and positive. Otherwise it will be a large negative value.
+
+Then, if $\alpha$ is a negative value, the learner's predictions are incorrect and what would've been, for example, a prediction of $1$ for a positive value, will be turnt into a value representing the opposite class, typically $-1$ or $0$.
+
+As an example, if the total error was defined as $\frac{3}{8}$ or $.625$, the amount of say would be calculated as:
+
+$\alpha = ln (\frac{(1-.625)}{.625}) * (\frac{1}{2})$
+
+For every incorrect mapping that each $h_t$ applies on $\vec{x} \rightarrow \vec{y}$, where $\vec{y}$ are the true labels, you take the initial weak learner $h_1$, and iteratively update the weights on the set of samples, such that the learner $h_1$ pays more attention to the weighted samples at it's second iteration. 
+
+This can be done through a loss function, denoted as:
+
+$l = \sum_{i=1}^ne^{-yh(x_i)_i}$
+
+Once the loss function is computed, the weight update can be computed as:
+
+$w \leftarrow w(e^{-\vec{\alpha} \vec{h(x_i)}y_i})$
+
+*This equation can be eperated into 2 equations as:*
+
+*If correct: $w \leftarrow w(e^{-\vec{\alpha}})$* <br>
+*Else: $w \leftarrow w(e^{\vec{\alpha}})$*
+
+*The first more explicitly computes the full weight increase / decrease operation in a single equation while the latter does it seperately.*
+
+where $y_i$ is the true label for the training sample $x_i$ and $\alpha$ is the amount of say that each ensemble, $\vec{h(x_i)}$ is the label prediction from the weak learners.
+
+Then the weights, $w$, are normalized such that the sum of all weights $w$ add up to $1$. 
+
+This can be done by: 
+
+$w_{sum} = \sum w$ <br>
+$w_{normalized} = \frac{w}{w_{sum}}$ <br>
+$w \leftarrow w_{normalized}$
+
+Then we train another instance of the algorithm, $h_2$, applying the weights $w$. This can be done via weighted bootstrapping or a weighted gini index / entropy.
+
+- The weighted gini index would look as $1 - \sum w^2$, replacing $w$ with the original probability $p$.
+- Taking a new dataset, based on weighted bootstrapping, would just increase the probability that a given sample is drawn based on the weights. You draw a new dataset baesd on the weights, but then reset the weights each time, allowing the weak learner to generate new weights on the weighted boostrapped dataset.
+
+The final model consists of all weak learners, with the updated weights, attained at the final iteration of the training. 
+
+Each weak learner then makes a final prediction, based on their amount of say, contributing to the final ensemble as:
+
+$H(\vec{x}) = \sum\alpha h(\vec{t})$
+
+If $H(\vec{x}) > 0$, the sample is classified as $1$, otherwise the sample is classified as $0$ or $-1$, depending on what the opposing label is identified as.

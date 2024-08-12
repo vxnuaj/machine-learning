@@ -39,7 +39,6 @@ Then for each alg or topic (when applicable):
 - [ ] **Dimensionality Reduction**:
     - [ ] PCA
     - [ ] t-SNE
-    - [ ] Truncated SVD
 - [ ] Git Repo with Notes + Implementations
 
 **Model Evaluation**
@@ -65,12 +64,14 @@ Then for each alg or topic (when applicable):
 - [X] Techniques to manage bias and variance
 
 **Ensemble Methods**
-- [ ] **Bagging**: Random forests
+- [X] **Bagging**: Random forests
+    - [X] Git Repo
+        - [X] Notes + Implementation
 - [ ] **Boosting**: 
   - [ ] AdaBoost
   - [ ] Gradient Boosting
-- [ ] Git Repo
-    - [ ] Notes + Implementation
+    - [ ] Git Repo
+        - [ ] Notes + Implementation
  
 
 **Introduction to Reinforcement Learning**

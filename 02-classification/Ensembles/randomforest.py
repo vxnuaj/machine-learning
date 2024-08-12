@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import time
 from nue.preprocessing import x_y_split, train_test_split, csv_to_numpy
 
 '''
@@ -22,12 +23,13 @@ class Node:
         return self.value is not None # return True if self.value isn't None, otherwise if the Node has a value return False. Checks if it is a Leaf node or not.
 
 class RandomTree:
-    def __init__(self, verbose_train = False):
+    def __init__(self, verbose_train = False, n_extremely_randomized_feats = None):
         self.verbose_train = verbose_train
+        self.n_extremely_randomized_feats = n_extremely_randomized_feats
         self.root = None # the model isn't trained if None
         self.n_leaf = 0 # number of leaf nodes. at init is 0
 
-    def train(self, X_train, Y_train, min_node_samples = 2, max_depth = 100, max_features = 5, criterion = 'gini', alpha = 0): 
+    def train(self, X_train, Y_train, min_node_samples = 2, max_depth = 100, max_features = 5, criterion = 'gini', alpha = 0, n_random_thresh = None): 
         self.X_train = X_train
         self.Y_train = Y_train
         self.min_node_samples = min_node_samples
@@ -90,18 +92,31 @@ class RandomTree:
         best_feat = None
         best_gain = -1
         
-        feat_idxs = np.array([np.random.randint(low = 0, high = X.shape[1]) for feat in range(self.max_features)])
-        
+        feat_idxs = np.random.randint(low = 0, high = X.shape[1], size = self.max_features)
+        if self.n_extremely_randomized_feats:
+            for feat_idx in feat_idxs:
+                X_col = X[:, feat_idx]
+                thresholds = np.unique(X_col)
+                thresh_idxs =  np.random.randint(low = 0, high=X_col.size, size = self.n_extremely_randomized_feats)
+
+                for thresh_idx in thresh_idxs:
+                    thresh_val = X_col[thresh_idx] 
+                    inf_gain = self._inf_gain(X_col, Y, thresh_val)
+                    if inf_gain > best_gain:
+                        best_gain = inf_gain
+                        best_thresh = thresh_val
+                        best_feat = feat_idx
+            return best_thresh, best_feat
+
         for feat_idx in feat_idxs:
             X_col = X[:, feat_idx]
-            thresholds = np.unique(X_col)
-            for thresh_val in thresholds:
+            thresh_vals = np.unique(X_col)
+            for thresh_val in thresh_vals:
                 inf_gain = self._inf_gain(X_col, Y, thresh_val)
                 if inf_gain > best_gain:
                     best_gain = inf_gain
                     best_thresh = thresh_val
                     best_feat = feat_idx
-        
         return best_thresh, best_feat
 
     def _inf_gain(self, X_col, Y, thresh):
@@ -111,7 +126,7 @@ class RandomTree:
         # if a left_idxs or right_idxs has no value to split upon, indicates that the given split with len == 0 is the worst possible split to go down.
         # prevents empty nodes with no values from being considered
         if len(left_idxs) == 0 or len(right_idxs) == 0:
-            return 0
+            return -1000
          
         n = len(Y)
         n_l = len(left_idxs)
@@ -167,8 +182,9 @@ class RandomTree:
 
 class RandomForest:
 
-    def __init__(self, verbose_train = False):
+    def __init__(self, verbose_train = False, n_extremely_randomized_feats = None):
         self.verbose_train = verbose_train
+        self.n_extremely_randomized_feats = n_extremely_randomized_feats
 
     def train(self, X_train, Y_train, max_features = 5, n_bootstraps = 10, rtree_dict = None, alpha_range = None):
         self.X_train = X_train
@@ -183,7 +199,7 @@ class RandomForest:
         
         for i in range(n_bootstraps):
             b_idx = self._bootstrap_idx()
-            model = RandomTree(**self._init_dict)
+            model = RandomTree(n_extremely_randomized_feats = self.n_extremely_randomized_feats, **self._init_dict)
             print(f"Training Tree #{i}")
             model.train(X_train[b_idx],Y_train[b_idx], max_features = self.max_features, **self._train_dict)
             self.models.append(model)
@@ -202,7 +218,7 @@ class RandomForest:
         self._get_preds()        
         self._accuracy()
         
-        print(f"\nFinal Forest Accuracy: {self.accuracy}")
+        print(f"\nFinal Forest Accuracy: {self.accuracy}%")
 
     def _get_dicts(self):
         self._init_dict = {k:v for k,v in self.rtree_dict.items() if k in ['verbose_train']}
@@ -225,7 +241,6 @@ class RandomForest:
     def _accuracy(self):
         self.accuracy = np.sum(self.preds.flatten() == self.Y_test.flatten()) / self.Y_test.size * 100
         
-
     @property
     def max_features(self):
         return self._max_features
@@ -242,7 +257,10 @@ if __name__ == "__main__":
     X_train, Y_train = x_y_split(train, y_col = 'last')
     X_test, Y_test = x_y_split(test, y_col = 'last') # dataset has 9 features
 
+    start_time = time.time()
+
     verbose_train = True
+    n_extremely_randomized_feats = 50
     n_bootstraps = 5
     rtree_dict = {
             'verbose_train': False,
@@ -251,11 +269,13 @@ if __name__ == "__main__":
             'criterion': 'entropy'
     }
 
-    model = RandomForest()
+    model = RandomForest(verbose_train = verbose_train, n_extremely_randomized_feats = n_extremely_randomized_feats)
     model.train(X_train, Y_train, max_features = 5, n_bootstraps = 5, rtree_dict = rtree_dict)
     model.test(X_test, Y_test)
-
-
+    print(model.n_extremely_randomized_feats)
+    end_time = time.time()
+    execution = end_time - start_time
+    print(f"Took: {execution} seconds")
     '''    model = RandomTree(verbose_train = verbose_train)
     model.train(X_train = X_train, Y_train = Y_train, alpha = 0, max_depth = 1000, min_node_samples = 2)
     model.test(X_test = X_test, Y_test = Y_test)
