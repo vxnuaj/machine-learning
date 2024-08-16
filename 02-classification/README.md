@@ -484,10 +484,6 @@ $\alpha = ln (\frac{(1-.625)}{.625}) * (\frac{1}{2})$
 
 For every incorrect mapping that each $h_t$ applies on $\vec{x} \rightarrow \vec{y}$, where $\vec{y}$ are the true labels, you take the initial weak learner $h_1$, and iteratively update the weights on the set of samples, such that the learner $h_1$ pays more attention to the weighted samples at it's second iteration. 
 
-This can be done through a loss function, denoted as:
-
-$l = \sum_{i=1}^ne^{-yh(x_i)_i}$
-
 Once the loss function is computed, the weight update can be computed as:
 
 $w \leftarrow w(e^{-\vec{\alpha} \vec{h(x_i)}y_i})$
@@ -509,6 +505,11 @@ $w_{sum} = \sum w$ <br>
 $w_{normalized} = \frac{w}{w_{sum}}$ <br>
 $w \leftarrow w_{normalized}$
 
+We can now compute the loss (error metric) of the entire model as:
+
+$l = \sum_{i=1}^ne^{-yh(x_i)_i}$
+
+O
 Then we train another instance of the algorithm, $h_2$, applying the weights $w$. This can be done via weighted bootstrapping or a weighted gini index / entropy.
 
 - The weighted gini index would look as $1 - \sum w^2$, replacing $w$ with the original probability $p$.
