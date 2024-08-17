@@ -162,12 +162,12 @@ class GradientBoost:
         self.Y_train = Y_train
         self.modality = modality
 
-        if self.modality == 'classificaton':
+        if self.modality == 'classification':
             self._train_classification(self.X_train, self.Y_train)
     
     def _train_classification(self, X, Y):
         init_probs = self._log_odds(Y)
-        init_residuals = Y_train - init_pred
+        init_residuals = Y_train - init_probs
         raw_output = self._transform_log_odds(init_residuals)
 
     def _log_odds(self, Y):
@@ -175,7 +175,7 @@ class GradientBoost:
         probs = freqs / Y.size
         return np.log(probs / (1 - probs))
 
-    def _transform_log_odds(self, residuals, probs):
+    def _transform_residuals(self, residuals, probs):
         return (np.sum(residuals) / np.sum(probs * (1 - probs))
 
     def test(self, X_test, Y_test):
