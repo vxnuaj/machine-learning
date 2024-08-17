@@ -1,12 +1,6 @@
 import numpy as np
 from nue.preprocessing import csv_to_numpy, x_y_split, train_test_split
 
-'''
-TODO: 
-
-if time do regression if not stick with classification
-'''
-
 class GradientBoost:
     def __init__(self, verbose_train = False, verbose_test = False):
         self.verbose_train = verbose_train
@@ -221,7 +215,7 @@ if __name__ == "__main__":
     train, test = train_test_split(data, train_split = .8)
     X_train, Y_train = x_y_split(train, y_col = 'last')
     X_test, Y_test = x_y_split(test, y_col = 'last')
-   
+  
     verbose_train = True
     n_trees = 50
     alpha = 1
