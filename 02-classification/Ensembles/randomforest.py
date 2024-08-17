@@ -29,7 +29,7 @@ class RandomTree:
         self.root = None # the model isn't trained if None
         self.n_leaf = 0 # number of leaf nodes. at init is 0
 
-    def train(self, X_train, Y_train, min_node_samples = 2, max_depth = 100, max_features = 5, criterion = 'gini', alpha = 0, n_random_thresh = None): 
+    def train(self, X_train, Y_train, min_node_samples = 2, max_depth = 100, max_features = 5, criterion = 'gini', alpha = 0):
         self.X_train = X_train
         self.Y_train = Y_train
         self.min_node_samples = min_node_samples

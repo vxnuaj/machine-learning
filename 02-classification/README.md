@@ -522,3 +522,111 @@ Each weak learner then makes a final prediction, based on their amount of say, c
 $H(\vec{x}) = \sum\alpha h(\vec{t})$
 
 If $H(\vec{x}) > 0$, the sample is classified as $1$, otherwise the sample is classified as $0$ or $-1$, depending on what the opposing label is identified as.
+
+### Gradient Boosting
+
+Gradient boosting is analogous to AdaBoost, but it's specifics differ.
+
+- It fits decision trees sequentially to the errors of previous trees
+- Each tree that is fit is deeper than the previous tree, fitting weak learners to reach a strong learner
+- It's loss function is differentiable, allowing us to compute gradients to train each subsequent tree.
+
+1. First, you construct a base tree (the root node)
+2. Compute the errors and predictions for the current tree.
+3. Then you build a new tree based on the errors of the current tree.
+4. You combine the current tree and the new tree and then repeat fom step $2$.
+
+**Regression**
+
+Say we denote our classifiers as $h_i$ where $i$ is the $ith$ classifier.
+
+For the root node, given a training set $X$ and labels $Y$, the prediction is based upon the average of $Y$:
+
+$\hat{Y} = \frac{\sum_{i=1}^n y_i}{n}$
+
+You can compute the loss as the mean squared error (mse).
+
+$mse = \frac{1}{n} \sum_{i = 1}^{n} y - \hat{y_i}$
+
+Then we build the next tree based on the errors of the previous tree, in this case, a root node.
+
+First compute the residuals:
+
+$R = Y - \hat{Y}$
+
+and then train a new tree to fit on these residuals rather than the labels. $r_i$ is the new $y_i$.
+
+> *Note that regression trees are fit and their nodes are split, based on the Mean Squared Error or Mean Absolute Error.*
+
+For each leaf node in a new tree, the value at the leaf node (label for a correpsonding sample) is the new residual $r$. 
+
+If a tree has multiple values at a leaf node, then the residual is the average of all the values. The samples at the given leaf node with non-unique values, then have their residuals assigned as that same average value. Both samples would get transfered the same residual via a weighted sum (below).
+
+So to transfer the new residuals, to the previous, you can take a weighted sum of the previous residuals with the new residuals as:
+
+$R = R^{t-1}  + \alpha R^t$
+
+where the residuals, $R$, becoems the predictions of the current tree.
+
+$\hat{Y} = R$
+
+where $\alpha$ is defined as the learning rate.
+
+Then essentially, the process at each step is:
+
+$\hat{Y} = \frac{1}{n} \sum_{i = 1}^{N} L(y_i, h(x_i + \hat{y}_{t-1}))$
+
+$h_t(x) = h_{t-1}(x) + \alpha\sum\hat{Y}$
+
+$repeat \hspace{1mm} t \hspace{1mm} times$
+
+> We're trying to get the prediction that minimizing the value of the loss function, based on labels Y and the predictions of the algorithm.
+
+**Classification**
+
+For classification, the process is similar, with some subtle differences:
+
+For the root node, the prediction is based on the log odds of $Y$. Say the prediction is $\hat{Y}$.
+
+$\hat{Y}_{raw} = \log(\frac{p}{1-p})$
+
+where $p$ is the probability of a given $Y$.
+
+Then, $\hat{Y}_{raw}$ becomes the initial value for the initial tree's leaf nodes.
+
+Then you transform it into a probability, using the sigmoid $(\sigma)$ or softmax function, commonly used in neural networks, depending if you're doing binary or multiclass classification:
+
+$Sigmoid = \frac{1}{1 + e^{-z}} = \hat{Y}$ where $z = \hat{Y}_{raw}$ 
+
+$Softmax = \frac{e^{z_k}}{\sum_j e^{z_j}} = \hat{Y}_k$ where $z = \hat{Y}_{raw}$ 
+
+You can then compute the loss using the categorical cross-entropy loss:
+
+$L = - \sum_k Y_k \log(\hat{Y}_k)$, for softmax (multiclass)
+
+$L = - \sum [Y \log(\hat{Y}) + (1 - Y) \log(1-\hat{Y})]$ for sigmoid (binary)
+
+You then compute the residual / gradient of the loss with respect to the prediction:
+
+For binary classification:
+$R = Y - \sigma(\hat{Y}_{raw})$
+
+For multiclass classification:
+$R_k = Y_k - \frac{e^{\hat{Y}_{raw,k}}}{\sum_j e^{\hat{Y}_{raw,j}}}$
+
+These residuals will then be used to grow the next tree.
+
+We can directly use these residuals to fit the next tree, as they represent the direction and magnitude of change needed in the log-odds space.
+
+We update the boosted ensemble as:
+
+$\hat{Y}_{raw} = \hat{Y}_{raw}^{t-1} + \alpha \cdot h_t(x)$
+
+where $\alpha$ is a learning rate and $h_t(x)$ is the prediction of the new tree, with respect to the residuals.
+
+This process is repeated for a specified number of iterations or until a stopping criterion is met.
+
+The final prediction is obtained by transforming the final $\hat{Y}_{raw}$ to probabilities using sigmoid or softmax functions. 
+
+In softmax, for a given class, the label with the highest probability is the assigned class for the sample
+In sigmoid, if the output is above $.5$, then the class is $1$, otherwise it is $0$
