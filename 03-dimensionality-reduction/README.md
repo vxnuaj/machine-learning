@@ -53,7 +53,7 @@ To find the eigenvector:
 3. $A\vec{x} - \lambda I \vec{x} = 0$
 4. $\vec{x}(A - \lambda I) = 0$
 5. $det(A - \lambda I ) \rightarrow polynomial$
-6. $polynomial_{root} \rightarrow eigenvalue \hspace{1mm} (\lambda)$
+6. $polynomial_{roots} \rightarrow \lambda \hspace{1mm} (eigenvalue / lagrange \hspace{1mm} multiplier)$
 7. Plug $\lambda$ back into $A\vec{x} = \lambda \vec{x}$ and solve the system of equations to get the eigenvectors
 8. Verify answer.
 
@@ -155,13 +155,13 @@ $$
 Variance = \frac{1}{N} \sum_{k=1}^N(V^TX_k - V^T\bar{X})^2
 $$
 $$
-Variance = V^T(\frac{1}{N} \sum_{k=1}^N(X_k - \bar{X})(X_k - \bar{X})^T)V
+Variance = V^T(\frac{1}{N} \sum_{k=1}^N(X_k - \bar{X})^T(X_k - \bar{X}))V
 $$
 $$
 Variance = V^TCV
 $$
 
-where $C$ turns to be the covariance matrix.
+where $C$ turns to be the covariance matrix and can be simply calculated as $X_{meancentered}^TX_{meancentered}$
 
 We want to maximize $V^TCV$ subject to $||V|| = 1$
 
@@ -189,10 +189,29 @@ This Lagrange Multiplier is used to then find the eigenvector which serves as th
 
 To reduce it, all we do is apply a Vector Projection as:
 
-$K = \frac{XP}{||P||^2}$<br>
-$X_{kPCA} = PK$ 
+$K = \frac{X_iP_i}{||P_i||^2}$<br>
+$X_{iPCA} = P_iK$ 
 
-where $K$ is the multiplier of the principal component $P$ where their multiplication represents the projection of the vector $X$, as $X_{kPCA}$.
+where $i$ denotes the $ith$ data vector and $ith$ principal component and where $K$ is the multiplier of the principal component $P$ where their multiplication represents the projection of the vector $X$, as $X_{iPCA}$.
+
+Or it can be simply expressed as a dot product of the entire matrices $X$ with $P$,
+
+$X_{iPCA} = XP$
+
+To evaluate how much each $P$ captures the variability from the original data and preserves it's structure, you can take a look at the corresponding $\lambda$ (eigenvalues) of each principal component and compute as:
+
+$\frac{\lambda}{\sum_k^K \lambda}$
+
+where you divide indivual eigenvalues over all eigenvalues summed, to get the ratio of variability captured by a given $\lambda$ to total variability.
+
+You can capture this over multiple $r$ $\lambda$'s as:
+
+$\frac{\sum_{r=1}^R \lambda}{\sum_{k = 1}^K \lambda}$
+
+where $R$ are the total number of principal components you want to consider, to determine how much variability your $R$ principal components captures relative to the original dataset.
+
+>*This is as each eigenvalue is a measure of variability of the orig. dataset.*
+
 
 In practice, when reducing the total number of features / dimensionality of a dataset,
 
@@ -202,3 +221,43 @@ In practice, when reducing the total number of features / dimensionality of a da
 - The row of the matrix, $V$, as $V_k$ should be orthonormal, meaning each row is orthogonal to another and the $L_2$ norm / magnitude of each row is equal to $1$, signalling a unit vector.
 
 > *PCA was confusing to me at first. If it still is for u, check [this out](https://www.youtube.com/watch?v=dhK8nbtii6I&t=442s).*
+
+## t-Distributed Stochastic Neighbor Embedding
+
+Say we have $n$ datapoints where $n$ is an arbitrary high dimension, $x_i \in {x_1, x_2, ..., x_n}$
+
+Given $x_i$, what is the probability that $x_j$ is its neighbor?
+
+An easy way to do this is to use an algorithm, $\mathbb{A}$, similar to a K-Nearest-Neighbors Classifier with $K = 1$, by computing a function, $g(x_i)$, to determine the shortest distance between the given $x_i$ and all possible $x_j$, given by $||x_i - x_j||^2$ (euclidean distance) to return the $1st$ nearest neighbor as the nearest neighbor.
+
+$P_{j|i} = g(x_i)$
+
+where $P_{j|i}$ is the probability that $x_j$ is the nearest neighbor to a given $x_i$.
+
+The issue with this is that as dimensions, $n$, continues to increase, computing neighbors as the nearest euclidean distance becomes unreliable as each datapoint $x_j$ essentially becomes near equidistant to each other[^1]
+
+Instead, you can compute a function that uses the nearest distance between $x_i$ and $x_j$, $d_{ij} = g(x_i)$ and the distances of the given $x_i$ to all other possible values, $x_{k≠j}$:
+
+$P_{j|i} = f(d_{ij}, d_{ik})$
+
+where $P_{j|i}$ is the probability that $x_j$ is the nearest neighbor to a given $x_i$.
+
+This function, $f$, can be defined as:
+
+$P_{j|i} = \frac{e^\frac{-||x_i-x_j||}{2\sigma^2}}{\sum_{k≠i} e^{-\frac{||x_i - x_k||}{2\sigma^2}}}$
+
+where the numerator and the term being $\sum$med in the denominator is the Radial Basis Function, where the output of the RBF higher is there is a higher similarity between 2 datapoints, in this case $x_i$ and $x_j$ and the inverse of there is a lower similarity.
+
+In this case, you can then see this function as a probability measure of a given $x_i$ and $x_j$ being neighbors compared with all other possible datapoints, $x_k$
+
+Now using that function, to compute the probability of drawing $x_i$ and $x_j$ if we pick a point at random, we can do so as:
+
+$P_{ij} = \frac{P_{j|i} + P_{i|j}}{2N} = \frac{P_{j|i}}{N}+\frac{P_{i|j}}{N}$
+
+where $P_{ij}$ is the probability, serving as a similarity measure between $x_{i}$ and $x_j$ and $N$ is the number of datapoints in $X$.
+
+We use both probabilities, $P_{j|i}$ and $P_{i|j}$ to symmetrically consider the probability as a hole. Given that $x_i$ and $x_j$ are different datapoints in an $\mathbb{R}^n$ vector space, their position would account for different probabilities.
+
+We want to get both of their probabilities, to then compute a more overarching view of the similarity measure, $P_{ij}$
+
+[^1]: Curse of Dimensionality
