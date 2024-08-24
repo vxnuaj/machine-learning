@@ -224,11 +224,11 @@ In practice, when reducing the total number of features / dimensionality of a da
 
 ## t-Distributed Stochastic Neighbor Embedding
 
-Say we have $n$ datapoints where $n$ is an arbitrary high dimension, $x_i \in {x_1, x_2, ..., x_n}$
+Say we have $n$ datapoints where $n$ is an arbitrary high dimension, $x_i \in \{x_1, x_2, ..., x_n\}$
 
 Given $x_i$, what is the probability that $x_j$ is its neighbor?
 
-An easy way to do this is to use an algorithm, $\mathbb{A}$, similar to a K-Nearest-Neighbors Classifier with $K = 1$, by computing a function, $g(x_i)$, to determine the shortest distance between the given $x_i$ and all possible $x_j$, given by $||x_i - x_j||^2$ (euclidean distance) to return the $1st$ nearest neighbor as the nearest neighbor.
+An easy way to do this is to use an algorithm, $\mathbb{A}$, similar to a K-Nearest-Neighbors Classifier with $K = 1$, by computing a function, $g(x_i)$, to determine the shortest distance between the given $x_i$ and all possible $x_j$, given by $||x_i - x_j||^2$ (euclidean distance squared) to return the $1st$ shortest value as the nearest neighbor.
 
 $P_{j|i} = g(x_i)$
 
@@ -236,7 +236,7 @@ where $P_{j|i}$ is the probability that $x_j$ is the nearest neighbor to a given
 
 The issue with this is that as dimensions, $n$, continues to increase, computing neighbors as the nearest euclidean distance becomes unreliable as each datapoint $x_j$ essentially becomes near equidistant to each other[^1]
 
-Instead, you can compute a function that uses the nearest distance between $x_i$ and $x_j$, $d_{ij} = g(x_i)$ and the distances of the given $x_i$ to all other possible values, $x_{k≠j}$:
+Instead, you can compute a function that uses the nearest distance between $x_i$ and $x_j$, $d_{ij} = g(x_i)$ and the distances of the given $x_i$ to all other possible values, $x_{k≠j}$ for a more precise calculation of the true nearest neighbor.
 
 $P_{j|i} = f(d_{ij}, d_{ik})$
 
@@ -246,18 +246,50 @@ This function, $f$, can be defined as:
 
 $P_{j|i} = \frac{e^\frac{-||x_i-x_j||}{2\sigma^2}}{\sum_{k≠i} e^{-\frac{||x_i - x_k||}{2\sigma^2}}}$
 
-where the numerator and the term being $\sum$med in the denominator is the Radial Basis Function, where the output of the RBF higher is there is a higher similarity between 2 datapoints, in this case $x_i$ and $x_j$ and the inverse of there is a lower similarity.
+where the numerator and the term being $\sum$med in the denominator is the Radial Basis Function $(RBF)$, where the output of the RBF higher is there is a higher similarity between 2 datapoints, in this case $x_i$ and $x_j$, and the inverse is a lower similarity.
 
-In this case, you can then see this function as a probability measure of a given $x_i$ and $x_j$ being neighbors compared with all other possible datapoints, $x_k$
+The $\sigma$ value, akin to the standard deviation, can be adjusted to increase or decrease the width of the individual bell curve given by the $RBF$. Increasing $\sigma$ will adjust the region of similarity of the $RBF$, to a more wider scale. 
+
+As $\sigma$ decreases, the similarity measure becomes less sensitive to distance, points that are further apart will still ahve higher similarity scores compared to when $\sigma$ is a lower value.
+
+In $f$, we allow the $\sigma$ to be dynamic, allowing the entire function to capture different nearest neighbors for a given $x_i$. If the nearest neighbors as so far apart from $x_i$, such that the nearest neighbors end up in a region of dissimilarity for the $RBF$, the similarity and then the probability measures of $x_i$ belonging to $x_j$ would be low despite then being near neighbors compared to other datapoints.
+
+Dynamically increasing $\sigma$ or decreasing it, allows for us to dynamically capture the similarity for different sets of $x_i$ and it's nearest neighbors.
+
+You can see this entire function $P_{j|i}$ as a probability measure of a given $x_i$ and $x_j$ being neighbors compared with all other possible datapoints, $x_k$.
 
 Now using that function, to compute the probability of drawing $x_i$ and $x_j$ if we pick a point at random, we can do so as:
 
 $P_{ij} = \frac{P_{j|i} + P_{i|j}}{2N} = \frac{P_{j|i}}{N}+\frac{P_{i|j}}{N}$
 
-where $P_{ij}$ is the probability, serving as a similarity measure between $x_{i}$ and $x_j$ and $N$ is the number of datapoints in $X$.
+datapoints in $X$.
 
-We use both probabilities, $P_{j|i}$ and $P_{i|j}$ to symmetrically consider the probability as a hole. Given that $x_i$ and $x_j$ are different datapoints in an $\mathbb{R}^n$ vector space, their position would account for different probabilities.
+We use both probabilities, $P_{j|i}$ and $P_{i|j}$ to symmetrically consider the probability as a whole. Given that $x_i$ and $x_j$ are different datapoints in an $\mathbb{R}^n$ vector space, their position would account for different probabilities.
 
-We want to get both of their probabilities, to then compute a more overarching view of the similarity measure, $P_{ij}$
+We want to get both of their probabilities, to then compute a more overarching view of the similarity measure, $P_{ij}$.
+
+So, the goal of t-SNE becomes to learn lower dimensional representations of each datapoint $x_i$, which we'll denote as $y_i \in \{y_1, y_2, ..., y_n \}$ such that the similarity, $P_{ij}$, remains preserved between the given $x_i$ and $x_j$.
+
+If the similarity of $x_1$ and $x_2$ was set to $.5$, then we'd want the similarity between $y_1$ and $y_2$ to be as near to $.5$ as is possible.
+
+So we can get the similarity metric of a given $y_i$ and $y_j$, denoted as $Q_{ij}$. Then what should be left is to compare and make sure that the similarity metric, $Q_{ij}$ and $P_{ij}$ are near equivalent.
+
+But the issue with this is that this can become erroneous as the dimensionality of a given space begins to increase[^1]. If we denoate $V_{near}$ as the volume of the  nearby region while $V_{moderate}$ as the volume of the region further from $x_i$, the volume of $V_{moderate}$ increases at a faster rate than $V_{near}$, leading the ratio, $V_{near}:V_{moderate}$ to have an increasingly high value as we increase the dimensionality of our vectorspace.
+
+But when we try to reduce $V_{moderate}$ into a lower dimensional space, there just isn't as much room to preserve the variability of $V_{moderate}$, such that you're forced to pack datapoints very tightly and the fidelity of the data diminishes.
+
+The probability $P_{ij}$ and it's function, turns out to be inadequate to mitigate this issue bruoght by the curse of dimensionality. This is as for $V_{moderate}$, despite being moderately close, the small tail of the distribution will still end up classifying moderately far datapoints with higher dissimilarity, as regions that are $V_{far}$.
+
+Instead we can use a distribution that has a fatter tail, allowing for $V_{moderate}$ datapoints to have an adequate probability with respect to $x_i$. This can be done using Student's t-distribution with a degree of freedom equalling $1$, to then compute $Q_{ij}$ in an improved manner.
+
+$Q_{ij} = \frac{(1 + ||y_i - y_j||^2)^{-1}}{\sum_{k≠i}(1+||y_i - y_k||^2)^{-1}}$
+
+where the numerator is the PDF for student's t-distribution as well as the $\sum$med denominator.
+
+> *Note that we only compute Q, for matrix that was reduced into a lower dimensionality. For the original, we compute P.*
+
+Then as a metric to compare the final probability distributions, $Q_{ij}$ and $P_{ij}$, we can use the $KL$ Divergence, to ensure that the probability of $x_j$ given $x_i$ remains relatively the same as we reduce dimensionality.
+
+The $KL$ then serves as a type of metric (loss), to denote how erroneous the algorithm is.
 
 [^1]: Curse of Dimensionality
