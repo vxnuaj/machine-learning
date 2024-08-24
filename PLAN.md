@@ -67,21 +67,17 @@ Then for each alg or topic (when applicable):
 - [X] **Bagging**: Random forests
     - [X] Git Repo
         - [X] Notes + Implementation
-- [ ] **Boosting**: 
-  - [ ] AdaBoost
+- [X] **Boosting**: 
+  - [X] AdaBoost
   - [ ] Gradient Boosting
-    - [ ] Git Repo
+  - [ ] XGBoost
+  - [ ] Git Repo
         - [ ] Notes + Implementation
  
 
-**Introduction to Reinforcement Learning**
-- [ ] **Basics**: Agents, environments, rewards, policies
-- [ ] Deep Q Learning
-  - [ ] **Deep-Q-Lander**
-
 **Content:**
-- [ ] Video on SVMs, Theory + Implementation + Article?
-- [ ] 2nd Video on Alg, Theory + Implementation + Article?
+- [ ] 1st Video + Article / Blog
+- [ ] 2nd Video + Article / Blog
 
 ---
 
