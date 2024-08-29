@@ -4,6 +4,14 @@ Clustering is a means to categorize unlabeled data in specific clusters, where e
 
 Clustering helps differentiate amongst different datapoints when they are unlabeled based on a similarity metric.
 
+In certain cases, obtaining labeled data can be very expensive especially when you're working in a deep scientific field and need domain experts to properly label your data.
+
+> *Example; Labeling brain tumor samples*
+
+Clustering can instead get the unlabeled data and group them together based on similarity metrics which can make classifying a set of datapoints easier.
+
+The output of a given clustering algorithm will be the assignment of each datapoint in a sample set, $X$, to a given cluster.
+
 Many clustering algorithms have a runtime complexity of $O(n^2)$, as they compare a given datapoint, $n_i$, to all other datapoints, $n_j$, $n-1$ times.
 
 $O(n^2) = \frac{n(n - 1)}{2}$
@@ -28,7 +36,9 @@ In practice, clustering algorithms that have $O(n^2)$ complexity aren't ideal to
 
 ### Centroid Based Clustering
 
-Centroid based clustering organizes unlabeled data into non-hierarchical clusters. It's efficient but sensitive to initial conditions of their centroids and outliers that may skew the centroids.
+A centroid is the mean ($\mu$) of a given cluster. It's essentially the point that is closest to all other points in a clluster.
+
+Centroid based clustering organizes unlabeled data into non-hierarchical clusters. It's goal is to make every point $x_i$ as close as possible to a centroid, $k_j$. It's efficient but sensitive to initial conditions of their centroids and outliers that may skew the centroids.
 
 > *Centroids are defined as the arithmetic mean of a given cluster*
 
@@ -39,7 +49,7 @@ Density based clustering clusters areas of with high sample density.
 This allows for discovering any amount of clusters of any shape, based on the hyperparameters:
 
 - $\epsilon$, denoting the maximum distance between two points, for them to be considered neighbors, to form a cluster.
-- MinPoints, denoting the minimum number of points required to form a cluster.
+- MinPoints, denoting the minimum number of points in a neighborhood required to form a cluster.
 
 ### Distribution Based Clustering
 
@@ -55,6 +65,7 @@ It clusters based on measuring the dissimilarity of datapoints at a given node.
 
 It's better well suited for hierarchical data such as a taxonomies.
 
+
 ## K-Means Clustering
 
 K-Means is a form of centroid based clustering where the algorithm, $\mathbb{A}$, aims to cluster the algorithm based on iteratively adjusting centroids by recomputing their arithmetic mean for each cluster at each iteration.
@@ -66,14 +77,99 @@ K-Means has a complexity of $O(n \cdot k \cdot i \cdot d)$ where:
 - $i$ is the number of iterations.
 - $d$ is the number of features.
 
-It aims for the goal, $min(WCSS)$ where $WCSS = \sum_{i=1}^k \sum_{x\in C} ||x - \mu||^2$
+Each cluster $k$ where $k \in [1, ..., K]$ is represented by a centroid which is the arithmetic mean, $\mu$, of all datapoints associated with the $k$th cluster, where $\mu$ is $\in \mathbb{R}^d$, where $d$ is the dimensionality of the vectorspace we're operating in. 
+
+### Alg, $\mathbb{A}$
+
+You want each $x_i$ to be as close as possible to a given assigned centroid, $\mu_j$, which is done by $min(WCSS)$ where $WCSS = \sum_{j=1}^k \sum_{x_{i}\in C_{j}} ||x_i - \mu_j||^2$ and $\mu_j$ is the mean of the dataset $X$ in the $j$th cluster.
+
+The function, $WCSS$ essentially computes the euclidean distance between all $i$ datapoints ($x_i$) in the $kth$ cluster, $C_j$, and the centroid ($\mu_j$) for the given cluster ($C_j$).
+
+We want to minimize this value, as doing so would give us the optimal centroids wehre $x_i$ is as close as possible to it's assigned centroid.
+
+We don't know the values of the centroids prior to the algorithm, so we can randomly initialize them to some random variable in the $\mathbb{R}^d$ space.
+
+Say we chose $k$ total clusters.
+
+We assign all $x_i$ datapoints in $X$ to their nearest centroid based on the euclidean distance.
+
+All $x_i$ datapoints assigned to the nearest $C_j$ centroid are given the label id, $z$.
+
+From there on, we can compute the distances of each point with the centroid, as $||x_i - \mu_j||^2$ to then compute the loss as a metric for the algorithm.
+
+Afterward, we reassign the value of the centroid $\mu_j^{t+1}$ to the mean of all $i$ datapoints that are attached to the current centroid ($\mu_j$) / cluster ($C_j$) via the assigned label id, $z$.
+
+> *t is the current iteration*
+
+And then compute the loss once more.
+
+Over time, as this goes on for multiple iterations, $\mathbb{A}$ will eventually find the optimum values of the centroids that minimize the distance of each $x_i$ from their assigned $C_j$.
+
+### Dealing with variability in $\mu$
+
+The k-means algorithm isn't guaranteed to find a global optima, there's a significant chance that it'll find a local minima instead
+
+Over multiple runs of $\mathbb{A}$, there will likely be different results for different initializations of clusters, and therefore different values of $WCSS$. Then, we don't really know what the optimal positions of $\mu$ that identify clusters ($C$) and the label ids ($z$) are.
+
+A simple way to solve this is to brute force a search for $k$ multiple times, by attempting multipel random initializations of clusters and take the output that minimizes the $WCSS$.
+
+### Choosing a value for $K$[^3]
+
+We can use the $WCSS$ as a measure for choosing the optimal value of $K$, but we don't choose a $K$ that yields the lowest $WCSS$, otherwise it'd be obvious to cheat and pick $K$ to be equivalent to $len(X)$.
+
+What can be done instead is to look for the $K$ where $Z_k$ stops decreasing quickly or at the *elbow* of a plotted $K$ and $Z_k$.
+
+<div align = 'center'>
+<img src = 'imgs/zk.png' width = 500></img><br>
+</div>
+<br>
+
+This indicates that the algorithm has already captured the key clusters of a given $X$. While it may be possible to divide further, doing so might lead to an erroneous result. It's more uncertain than not.
+
+A more rigorous means to choose the right $K$ is to compute what's called a Gap Statistic, which compares the clustering results on the observed data with those on a uniformly distributed reference dataset.
+
+For each value of $k$, we can compute the final $WCSS$ for $X$ after 'convergence', alongside the $WCSS$ for a synthetic dataset, $X_{u}$.
+
+Here, $X_{u}$ is a dataset of same size as $X$ but with it's features randomly drawn from a uniform distribution, that's within the same range as the features of $X$.
+
+Afterward, we can compute the gap statistic as:
+
+$Gap = \frac{1}{b} \sum_{b=1}^B log(WCSS_b) - log(WCSS_k)$
+
+where $B$ is the total amount of synthetic datasets we use. Typically $B$ is a value $\in [10, ..., 500]$ depending on the amount of computational resources and complexity of the problem.
+
+Ultimately, the goal is to $argmax(Gap)$, where the $k$ with the corresponding maximum is the optimal value for the amount of $k$ clusters.
+
+
+but if the position of the clusters differs per iteration, how would we know which k is optimal? wouldn't metrics be inconsistent?
+
+Weaknesses:
+
+- No guarantee for the global minima, even with k-means++
+- Imbalanced datasets / densities of classes
+- Samples of same class aren't geometrically clustered into the same space in $\mathbb{R}^d$, they aren't isotrophic.
+
+**TLDR:**
 
 1. Choose the number of clusters, $k$ (hyperparamter, randomly or via *k-means++*[^1])
-2. Randomly choose $k$ centroids
-3. Based on the euclidean distance, assign each point to the nearest $k_i$ centroid
-4. For each given cluster, calculate the centroid by taking the arithmetic mean of all points in the cluster.
-5. Reassign ech point to the nearest centroid.
+2. Randomly choose $k$ centroids, $C$
+3. Based on the euclidean distance, assign each point ($x_i$) to the nearest $k_i$ centroid and give each $x_i$ a label id, $z$.
+4. For each given cluster, reassign the centroid by taking the arithmetic mean of all points in the cluster or the points that have the same label id, $z$ (same thing, $z$ is just how you identify them).
+5. Reassign each point to the nearest centroid via the euclidean distance.
 6. Repeat until no points change clusters and the $WCSS$ is minimized[^2]
+
+
 
 [^1]: Clarify what K-means++ is
 [^2]: how does this includde WCSS?
+[^3]: but if the position of the clusters differs per iteration, how would we know which k is optimal? wouldn't metrics be inconsistent?
+
+
+
+#### Useful Resources:
+
+[Video on K-means by Stanford CS221](https://www.youtube.com/watch?v=5-Fn8R9fH7A)
+
+[Handout on K-Means by Stanford CS221](https://stanford.edu/~cpiech/cs221/handouts/kmeans.html)
+
+[K-means by Cornell CS4/5780](https://www.cs.cornell.edu/courses/cs4780/2022sp/notes/LectureNotes04.html)
