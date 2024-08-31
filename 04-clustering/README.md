@@ -68,20 +68,27 @@ It's better well suited for hierarchical data such as a taxonomies.
 
 ## K-Means Clustering
 
+Notation:
+
+- $C_j$ is the $jth$ cluster
+- $k$ is the total number of clusters
+- $\mu_j$ is the $jth$ centroid
+- $t$ is the current iteration. $T$ is the total number of iterations.
+
 K-Means is a form of centroid based clustering where the algorithm, $\mathbb{A}$, aims to cluster the algorithm based on iteratively adjusting centroids by recomputing their arithmetic mean for each cluster at each iteration.
 
-K-Means has a complexity of $O(n \cdot k \cdot i \cdot d)$ where:
+K-Means has a complexity of $O(n \cdot k \cdot T \cdot d)$ where:
 
-- $n$ is the number of datapoints
+- $n$ is the number of samples
 - $k$ is the number of clusters.
-- $i$ is the number of iterations.
+- $t$ is the number of iterations.
 - $d$ is the number of features.
 
-Each cluster $k$ where $k \in [1, ..., K]$ is represented by a centroid which is the arithmetic mean, $\mu$, of all datapoints associated with the $k$th cluster, where $\mu$ is $\in \mathbb{R}^d$, where $d$ is the dimensionality of the vectorspace we're operating in. 
+Each cluster $k$ where $k \in [1, ..., K]$ is represented by a centroid which is the arithmetic mean, $\mu$, of all datapoints associated with the $kth$ cluster, where $\mu$ is $\in \mathbb{R}^d$, where $d$ is the dimensionality of the vectorspace we're operating in. 
 
 ### Alg, $\mathbb{A}$
 
-You want each $x_i$ to be as close as possible to a given assigned centroid, $\mu_j$, which is done by $min(WCSS)$ where $WCSS = \sum_{j=1}^k \sum_{x_{i}\in C_{j}} ||x_i - \mu_j||^2$ and $\mu_j$ is the mean of the dataset $X$ in the $j$th cluster.
+You want each $x_i$ to be as close as possible to a given assigned centroid, $\mu_j$, which is done by $min(WCSS)$ where $WCSS = \sum_{j=1}^k \sum_{x_{i}\in C_{j}} ||x_i - \mu_j||^2$ and $\mu_j$ is the mean of the dataset $X$ in the $jth$ cluster.
 
 The function, $WCSS$ essentially computes the euclidean distance between all $i$ datapoints ($x_i$) in the $kth$ cluster, $C_j$, and the centroid ($\mu_j$) for the given cluster ($C_j$).
 
@@ -91,9 +98,9 @@ We don't know the values of the centroids prior to the algorithm, so we can rand
 
 Say we chose $k$ total clusters.
 
-We assign all $x_i$ datapoints in $X$ to their nearest centroid based on the euclidean distance.
+We assign all $x_i$ datapoints in $X$ to their nearest centroid, $\mu_j$, based on the euclidean distance.
 
-All $x_i$ datapoints assigned to the nearest $C_j$ centroid are given the label id, $z$.
+All $x_i$ datapoints assigned to the nearest $\mu_j$ are given the label id, $z$.
 
 From there on, we can compute the distances of each point with the centroid, as $||x_i - \mu_j||^2$ to then compute the loss as a metric for the algorithm.
 
@@ -111,7 +118,18 @@ The k-means algorithm isn't guaranteed to find a global optima, there's a signif
 
 Over multiple runs of $\mathbb{A}$, there will likely be different results for different initializations of clusters, and therefore different values of $WCSS$. Then, we don't really know what the optimal positions of $\mu$ that identify clusters ($C$) and the label ids ($z$) are.
 
-A simple way to solve this is to brute force a search for $k$ multiple times, by attempting multipel random initializations of clusters and take the output that minimizes the $WCSS$.
+A simple way to solve this is to brute force a search for $k$ multiple times, by attempting multiple random initializations of clusters and take the output that minimizes the $WCSS$.
+
+Another way to do so is to use k-means++ which aims to initialize each $\mu$ such that they are as evenly spread out as possible from each other. 
+
+This consists of:
+
+1. Randomly initialize a first centroid, $\mu_1$, drawn uniformly.
+   1. Say we add $\mu_1$ to set $\Mu$
+2. Compute all distances between all $x_i$ and the centroid $\mu_1$.
+3. Compute a probability that a given $x_i$ will be a centroid, based on the euclidean distance as $P(x_i) = \frac{D(x_i)^2}{\sum_{x \notin \Mu}D(x)^2}$ where $D()$ is the function that computes the euclidean distance for a given $x_i$ to it's nearest centroid, $\mu_i$.
+4. Choose a centroid, drawn randomly via weighted probabilities yielded by $P(x_i)$
+5. Repeat for all $k$ centroids.[^4]
 
 ### Choosing a value for $K$[^3]
 
@@ -140,30 +158,25 @@ where $B$ is the total amount of synthetic datasets we use. Typically $B$ is a v
 
 Ultimately, the goal is to $argmax(Gap)$, where the $k$ with the corresponding maximum is the optimal value for the amount of $k$ clusters.
 
+Of course, given that we initialize $k$ centroids ($\mu$) randomly, it's very likely that we'll get inconsistent values for a gap statistic if run multiple times for the same $k$. Instead, we can run $\mathbb{A}$ multiple times on the same number of $k$ centroids and then average the multiple returns of $WCSS$ over the total number of runs, to then get an average gap statistic for a given $k$.
 
-but if the position of the clusters differs per iteration, how would we know which k is optimal? wouldn't metrics be inconsistent?
-
-Weaknesses:
+Weaknesses of K-Means:
 
 - No guarantee for the global minima, even with k-means++
+- Assumes a linear boundary, may be unsuitable for datasets that aren't clearly seperable (instead use Kernel Trick).
 - Imbalanced datasets / densities of classes
 - Samples of same class aren't geometrically clustered into the same space in $\mathbb{R}^d$, they aren't isotrophic.
 
 **TLDR:**
 
-1. Choose the number of clusters, $k$ (hyperparamter, randomly or via *k-means++*[^1])
+1. Choose the number of clusters, $k$ (hyperparamter, randomly or via *k-means++*)
 2. Randomly choose $k$ centroids, $C$
 3. Based on the euclidean distance, assign each point ($x_i$) to the nearest $k_i$ centroid and give each $x_i$ a label id, $z$.
 4. For each given cluster, reassign the centroid by taking the arithmetic mean of all points in the cluster or the points that have the same label id, $z$ (same thing, $z$ is just how you identify them).
 5. Reassign each point to the nearest centroid via the euclidean distance.
-6. Repeat until no points change clusters and the $WCSS$ is minimized[^2]
+6. Repeat until no points change clusters and the $WCSS$ is minimized
 
-
-
-[^1]: Clarify what K-means++ is
-[^2]: how does this includde WCSS?
 [^3]: but if the position of the clusters differs per iteration, how would we know which k is optimal? wouldn't metrics be inconsistent?
-
 
 
 #### Useful Resources:
