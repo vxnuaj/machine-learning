@@ -77,11 +77,11 @@ Notation:
 
 K-Means is a form of centroid based clustering where the algorithm, $\mathbb{A}$, aims to cluster the algorithm based on iteratively adjusting centroids by recomputing their arithmetic mean for each cluster at each iteration.
 
-K-Means has a complexity of $O(n \cdot k \cdot T \cdot d)$ where:
+K-Means has a complexity of $O(n \cdot K \cdot T \cdot d)$ where:
 
-- $n$ is the number of samples
-- $k$ is the number of clusters.
-- $t$ is the number of iterations.
+- $n$ is the number of samples.
+- $K$ is the total number of clusters / centroids.
+- $T$ is the number of iterations.
 - $d$ is the number of features.
 
 Each cluster $k$ where $k \in [1, ..., K]$ is represented by a centroid which is the arithmetic mean, $\mu$, of all datapoints associated with the $kth$ cluster, where $\mu$ is $\in \mathbb{R}^d$, where $d$ is the dimensionality of the vectorspace we're operating in. 
@@ -125,9 +125,9 @@ Another way to do so is to use k-means++ which aims to initialize each $\mu$ suc
 This consists of:
 
 1. Randomly initialize a first centroid, $\mu_1$, drawn uniformly.
-   1. Say we add $\mu_1$ to set $\Mu$
+   1. Say we add $\mu_1$ to set $M$
 2. Compute all distances between all $x_i$ and the centroid $\mu_1$.
-3. Compute a probability that a given $x_i$ will be a centroid, based on the euclidean distance as $P(x_i) = \frac{D(x_i)^2}{\sum_{x \notin \Mu}D(x)^2}$ where $D()$ is the function that computes the euclidean distance for a given $x_i$ to it's nearest centroid, $\mu_i$.
+3. Compute a probability that a given $x_i$ will be a centroid, based on the euclidean distance as $P(x_i) = \frac{D(x_i)^2}{\sum_{x \notin M}D(x)^2}$ where $D()$ is the function that computes the euclidean distance for a given $x_i$ to it's nearest centroid, $\mu_i$.
 4. Choose a centroid, drawn randomly via weighted probabilities yielded by $P(x_i)$
 5. Repeat for all $k$ centroids.[^4]
 
