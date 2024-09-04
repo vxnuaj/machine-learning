@@ -1,7 +1,6 @@
 # Clustering
 
 Clustering is a means to categorize unlabeled data in specific clusters, where each cluster has as unique identifier, akin to a class label.
-
 Clustering helps differentiate amongst different datapoints when they are unlabeled based on a similarity metric.
 
 In certain cases, obtaining labeled data can be very expensive especially when you're working in a deep scientific field and need domain experts to properly label your data.
@@ -94,7 +93,7 @@ The function, $WCSS$ essentially computes the euclidean distance between all $i$
 
 We want to minimize this value, as doing so would give us the optimal centroids wehre $x_i$ is as close as possible to it's assigned centroid.
 
-We don't know the values of the centroids prior to the algorithm, so we can randomly initialize them to some random variable in the $\mathbb{R}^d$ space.
+We don't know the values of the centroids prior to the algorithm, so we can randomly initialize them to some random variable in the $\mathbb{R}^d$ space, if we're not using k-means++.
 
 Say we chose $k$ total clusters.
 
@@ -160,7 +159,7 @@ Ultimately, the goal is to $argmax(Gap)$, where the $k$ with the corresponding m
 
 Of course, given that we initialize $k$ centroids ($\mu$) randomly, it's very likely that we'll get inconsistent values for a gap statistic if run multiple times for the same $k$. Instead, we can run $\mathbb{A}$ multiple times on the same number of $k$ centroids and then average the multiple returns of $WCSS$ over the total number of runs, to then get an average gap statistic for a given $k$.
 
-Weaknesses of K-Means:
+**Weaknesses of K-Means:**
 
 - No guarantee for the global minima, even with k-means++
 - Assumes a linear boundary, may be unsuitable for datasets that aren't clearly seperable (instead use Kernel Trick).
@@ -178,11 +177,27 @@ Weaknesses of K-Means:
 
 [^3]: but if the position of the clusters differs per iteration, how would we know which k is optimal? wouldn't metrics be inconsistent?
 
+# Hierarchical Clustering
 
-#### Useful Resources:
+Won't be covering Hierarchical Clustering as it isn't near relevant to Deep Learning as K-Means is. I'm optimizing for deep learning.
+But here are some useful resources:
+
+https://www.cs.princeton.edu/courses/archive/fall18/cos324/files/hierarchical-clustering.pdf
+
+https://www.econ.upf.edu/~michael/stanford/maeb7.pdf
+
+https://www.youtube.com/watch?v=esmzYhuFnds&t=2197s
+
+https://en.wikipedia.org/wiki/Hierarchical_clustering
+
+Also checkout introduction to statistical learning.
+
+#### Other Useful Resources:
 
 [Video on K-means by Stanford CS221](https://www.youtube.com/watch?v=5-Fn8R9fH7A)
 
 [Handout on K-Means by Stanford CS221](https://stanford.edu/~cpiech/cs221/handouts/kmeans.html)
 
 [K-means by Cornell CS4/5780](https://www.cs.cornell.edu/courses/cs4780/2022sp/notes/LectureNotes04.html)
+
+[PDF on Hierarchical by Princeton](https://www.cs.princeton.edu/courses/archive/fall18/cos324/files/hierarchical-clustering.pdf) 
